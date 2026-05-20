@@ -1,0 +1,25 @@
+{
+  "name": "ContaEdu — Contabilidad Secundaria",
+  "short_name": "ContaEdu",
+  "description": "Aplicación didáctica de Contabilidad para nivel secundario",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#1B2B3A",
+  "theme_color": "#1B2B3A",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
