@@ -1,5 +1,5 @@
 /* =========================================
-   ContaEdu — Estilos principales v2
+   ContaEdu — Estilos principales v3
    ========================================= */
 
 /* --- VARIABLES --- */
@@ -142,11 +142,7 @@ body {
 .nav-item:hover  { background: var(--bg-sidebar-hover); color: var(--text-sidebar-active); }
 .nav-item.active { background: var(--bg-sidebar-active); color: var(--text-sidebar-active); font-weight: 500; }
 
-/* Badge de progreso en nav-item */
-.progreso-badge {
-  margin-left: auto;
-  flex-shrink: 0;
-}
+.progreso-badge { margin-left: auto; flex-shrink: 0; }
 
 /* --- PANEL DE PROGRESO --- */
 .sidebar-progreso {
@@ -175,10 +171,7 @@ body {
   padding: 4px 0;
   opacity: 0.85;
 }
-.sp-fila span:first-child {
-  color: var(--text-sidebar);
-  opacity: 0.75;
-}
+.sp-fila span:first-child { opacity: 0.75; }
 .sp-fila span:last-child {
   font-weight: 500;
   font-family: var(--font-mono);
@@ -187,36 +180,11 @@ body {
   min-width: 36px;
   text-align: right;
 }
-.sp-fila.completo span:last-child {
-  color: #4ADE80;
-}
-
-.sp-reset {
-  margin-top: 10px;
-  width: 100%;
-  padding: 6px;
-  background: transparent;
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: var(--radius-sm);
-  color: var(--text-sidebar);
-  font-family: var(--font-sans);
-  font-size: 11px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  opacity: 0.5;
-  transition: opacity var(--transition), border-color var(--transition);
-}
-.sp-reset:hover {
-  opacity: 1;
-  border-color: rgba(255,255,255,0.25);
-}
+.sp-fila.completo span:last-child { color: #4ADE80; }
 
 /* Barra de progreso global */
 .sp-barra-wrap {
-  margin: 8px 0 2px;
+  margin: 8px 0 4px;
   background: rgba(255,255,255,0.08);
   border-radius: 10px;
   height: 4px;
@@ -229,6 +197,56 @@ body {
   transition: width 0.4s ease;
 }
 
+/* --- BOTÓN EXPORTAR PDF --- */
+.sp-pdf-btn {
+  margin-top: 12px;
+  width: 100%;
+  padding: 8px 10px;
+  background: rgba(96,165,250,0.12);
+  border: 1px solid rgba(96,165,250,0.25);
+  border-radius: var(--radius-md);
+  color: #93C5FD;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+}
+.sp-pdf-btn:hover {
+  background: rgba(96,165,250,0.22);
+  border-color: rgba(96,165,250,0.4);
+  color: #BFDBFE;
+}
+.sp-pdf-btn .ti { font-size: 15px; }
+
+.sp-reset {
+  margin-top: 6px;
+  width: 100%;
+  padding: 6px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius-sm);
+  color: var(--text-sidebar);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  opacity: 0.45;
+  transition: opacity var(--transition), border-color var(--transition);
+}
+.sp-reset:hover {
+  opacity: 0.9;
+  border-color: rgba(255,255,255,0.2);
+}
+
+/* --- SIDEBAR FOOTER --- */
 .sidebar-footer {
   padding: 0.75rem 0.625rem 1rem;
   border-top: 1px solid rgba(255,255,255,0.06);
@@ -252,7 +270,7 @@ body {
   transition: background var(--transition);
 }
 .mode-toggle:hover { background: var(--bg-sidebar-hover); color: var(--text-sidebar-active); }
-.mode-toggle .ti { font-size: 16px; }
+.mode-toggle .ti   { font-size: 16px; }
 
 /* --- TOPBAR (mobile) --- */
 .topbar {
@@ -487,8 +505,8 @@ tr:hover td { background: var(--bg-muted); }
 }
 .step-number.active { background: var(--accent); color: #fff; border-color: transparent; }
 .step-number.done   { background: var(--success); color: #fff; border-color: transparent; }
-.step-title { font-size: 13px; font-weight: 600; }
-.step-body  { padding: 14px 16px; }
+.step-title  { font-size: 13px; font-weight: 600; }
+.step-body   { padding: 14px 16px; }
 
 /* --- DEBE/HABER --- */
 .dh-grid { display: flex; gap: 10px; }
@@ -499,9 +517,16 @@ tr:hover td { background: var(--bg-muted); }
 .dh-label-haber { font-size: 11px; font-weight: 600; color: #DC2626; margin-bottom: 8px; letter-spacing: 0.5px; }
 .dh-row { margin-bottom: 8px; }
 .dh-row label { font-size: 11px; color: var(--text-secondary); display: block; margin-bottom: 3px; }
-.dh-row input { width: 100%; padding: 7px 10px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); font-family: var(--font-sans); font-size: 12px; background: var(--bg-surface); color: var(--text-primary); }
-.dh-row input.ok  { border-color: var(--success); }
-.dh-row input.err { border-color: var(--danger);  }
+.dh-row input {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
 
 /* --- STAT CARDS --- */
 .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 1rem; }
@@ -524,8 +549,6 @@ tr:hover td { background: var(--bg-muted); }
 .ej-card-title { font-size: 13px; font-weight: 500; margin-bottom: 3px; }
 .ej-card.selected .ej-card-title { color: var(--accent); }
 .ej-card-sub { font-size: 11px; color: var(--text-muted); }
-
-/* Badge completo en tarjeta de ejercicio */
 .ej-card .ej-completado {
   position: absolute;
   top: 8px; right: 8px;
@@ -533,7 +556,7 @@ tr:hover td { background: var(--bg-muted); }
   color: var(--success);
 }
 
-/* --- TABS (dentro de panel) --- */
+/* --- TABS INTERNOS --- */
 .inner-tabs {
   display: flex;
   gap: 4px;
@@ -586,7 +609,7 @@ code {
   color: var(--text-secondary);
 }
 
-/* --- OPTION LIST (asientos) --- */
+/* --- OPTION LIST --- */
 .option-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
 .option-item {
   display: flex;
