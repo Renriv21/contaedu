@@ -57,6 +57,7 @@ const Progreso = {
     asientos: 3,
     iva:      3,
     concil:   2,
+    mayor:    2,
   },
 
   /* Carga todo el progreso guardado */

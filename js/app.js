@@ -25,13 +25,14 @@ const App = (() => {
     Asientos.init();
     IVA.init();
     Conciliacion.init();
+    Mayor.init();
 
     // Mostrar progreso guardado en sidebar
     refrescarProgreso();
 
     // Restaurar tab desde URL hash
     const hash = window.location.hash.replace('#', '');
-    if (['plan','asientos','iva','concil'].includes(hash)) {
+    if (['plan','asientos','iva','concil','mayor'].includes(hash)) {
       const btn = document.querySelector(`[data-tab="${hash}"]`);
       showTab(hash, btn, false);
     }
@@ -96,6 +97,7 @@ const App = (() => {
       { id: 'asientos', label: 'Asientos'         },
       { id: 'iva',      label: 'IVA'              },
       { id: 'concil',   label: 'Conciliación'     },
+      { id: 'mayor',    label: 'Libro Mayor'      },
     ];
 
     modulos.forEach(m => {

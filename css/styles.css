@@ -627,6 +627,23 @@ code {
 .option-item.wrong   { background: var(--danger-light);  border-color: rgba(220,38,38,0.3); color: var(--danger); }
 .option-item .ti { font-size: 16px; flex-shrink: 0; }
 
+/* --- CUENTAS T (MAYOR) --- */
+.t-cuenta-wrap { border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px; margin-bottom: 12px; }
+.t-cuenta-title { text-align: center; font-weight: 600; font-size: 14px; padding-bottom: 8px; border-bottom: 3px solid var(--border-strong); margin-bottom: 8px; }
+.t-cuenta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+.t-col-debe { border-right: 3px solid var(--border-strong); padding-right: 10px; }
+.t-col-haber { padding-left: 10px; }
+.t-col-title { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-align: center; margin-bottom: 8px; }
+.t-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.t-row input { width: 100%; padding: 5px 8px; text-align: right; font-family: var(--font-mono); font-size: 12px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--bg-surface); color: var(--text-primary); }
+.t-row input.ok { border-color: var(--success); }
+.t-row input.err { border-color: var(--danger); }
+.t-total-row { display: flex; justify-content: space-between; border-top: 1px solid var(--border-strong); padding-top: 6px; margin-top: 6px; font-weight: 600; font-family: var(--font-mono); font-size: 12px; }
+.t-saldo-row { margin-top: 10px; padding-top: 10px; border-top: 2px dashed var(--border-strong); display: flex; align-items: center; justify-content: space-between; font-weight: 600; font-family: var(--font-mono); font-size: 13px; }
+.t-saldo-row select { padding: 4px 6px; font-size: 11px; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); background: var(--bg-surface); color: var(--text-primary); }
+.t-saldo-row select.ok { border-color: var(--success); }
+.t-saldo-row select.err { border-color: var(--danger); }
+
 /* --- RESPONSIVE --- */
 @media (max-width: 768px) {
   .topbar { display: flex; }

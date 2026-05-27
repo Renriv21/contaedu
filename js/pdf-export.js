@@ -70,6 +70,21 @@ const PDFExport = (() => {
     }));
   }
 
+  function getDatosMayor() {
+    const data = Progreso.cargar();
+    const modData = data['mayor'] || {};
+    const EJERCICIOS = [
+      { titulo: 'Mayorización de Caja y Banco', cuentas: 2 },
+      { titulo: 'Mayorización de Ventas y Mercaderías', cuentas: 4 },
+    ];
+    return EJERCICIOS.map((ej, i) => ({
+      titulo:     ej.titulo,
+      completado: modData[i]?.completado || false,
+      fecha:      modData[i]?.fecha || '—',
+      cuentas:    ej.cuentas,
+    }));
+  }
+
   /* ---- HTML DEL REPORTE ---- */
 
   function buildHTML(nombreAlumno) {
@@ -82,6 +97,7 @@ const PDFExport = (() => {
     const asientos = getDatosAsientos();
     const iva      = getDatosIVA();
     const concil   = getDatosConcil();
+    const mayor    = getDatosMayor();
 
     function filaEj(ej, detalle) {
       const estado = ej.completado
@@ -118,8 +134,9 @@ const PDFExport = (() => {
     const asientosCompletados = asientos.filter(e=>e.completado).length;
     const ivaCompletados     = iva.filter(e=>e.completado).length;
     const concilCompletados  = concil.filter(e=>e.completado).length;
-    const totalCompletados   = planCompletados + asientosCompletados + ivaCompletados + concilCompletados;
-    const totalEjs           = plan.length + asientos.length + iva.length + concil.length;
+    const mayorCompletados   = mayor.filter(e=>e.completado).length;
+    const totalCompletados   = planCompletados + asientosCompletados + ivaCompletados + concilCompletados + mayorCompletados;
+    const totalEjs           = plan.length + asientos.length + iva.length + concil.length + mayor.length;
 
     return `<!DOCTYPE html>
 <html lang="es">
@@ -419,7 +436,7 @@ const PDFExport = (() => {
       </div>
       <div class="resumen-stat">
         <div class="resumen-stat-label">Módulos activos</div>
-        <div class="resumen-stat-valor">4</div>
+        <div class="resumen-stat-valor">5</div>
       </div>
     </div>
     <div class="barra-wrap">
@@ -457,6 +474,12 @@ const PDFExport = (() => {
       'Conciliación Bancaria', '🏦',
       concil.map(e => filaEj(e, `${e.partidas} partidas conciliatorias`)).join(''),
       concilCompletados, concil.length
+    )}
+
+    ${seccion(
+      'Libro Mayor', '📓',
+      mayor.map(e => filaEj(e, `${e.cuentas} cuentas a mayorizar`)).join(''),
+      mayorCompletados, mayor.length
     )}
 
   </div>
@@ -552,10 +575,11 @@ const PDFExport = (() => {
     ventana.document.write(html);
     ventana.document.close();
 
-    // Esperar que carguen las fuentes antes de imprimir
-    ventana.onload = () => {
-      setTimeout(() => ventana.print(), 600);
-    };
+    // Usamos setTimeout directo porque ventana.onload puede fallar tras document.write
+    setTimeout(() => {
+      ventana.focus();
+      ventana.print();
+    }, 800);
   }
 
   return { mostrarModal, cerrarModal, generar };
