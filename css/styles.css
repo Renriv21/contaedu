@@ -644,6 +644,18 @@ code {
 .t-saldo-row select.ok { border-color: var(--success); }
 .t-saldo-row select.err { border-color: var(--danger); }
 
+/* --- BALANCE SUMAS Y SALDOS --- */
+.bal-wrap { overflow-x: auto; margin-top: 10px; border: 1px solid var(--border); border-radius: var(--radius-md); }
+.bal-table { width: 100%; border-collapse: collapse; min-width: 600px; }
+.bal-table th, .bal-table td { border: 1px solid var(--border); padding: 8px 10px; font-size: 12px; }
+.bal-table th { background: var(--bg-muted); text-align: center; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+.bal-table th[colspan] { border-bottom: 2px solid var(--border-strong); }
+.bal-table td:first-child { font-weight: 500; }
+.bal-table input { width: 100%; padding: 4px 6px; text-align: right; font-family: var(--font-mono); font-size: 12px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--bg-surface); color: var(--text-primary); }
+.bal-table input.ok { border-color: var(--success); }
+.bal-table input.err { border-color: var(--danger); }
+.bal-total-row td { font-weight: 700; background: var(--bg-muted); }
+
 /* --- RESPONSIVE --- */
 @media (max-width: 768px) {
   .topbar { display: flex; }
