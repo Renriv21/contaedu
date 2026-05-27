@@ -7,18 +7,11 @@
   <meta name="theme-color" content="#1B2B3A" />
   <title>ContaEdu</title>
 
-  <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json" />
-
-  <!-- Tabler Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
-
-  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
-
-  <!-- App CSS -->
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
@@ -49,6 +42,31 @@
       </button>
     </nav>
 
+    <!-- PANEL DE PROGRESO -->
+    <div class="sidebar-progreso" id="sidebar-progreso">
+      <div class="sp-titulo">Mi progreso</div>
+      <div class="sp-fila">
+        <span>Plan de Cuentas</span>
+        <span id="sp-plan">—</span>
+      </div>
+      <div class="sp-fila">
+        <span>Asientos</span>
+        <span id="sp-asientos">—</span>
+      </div>
+      <div class="sp-fila">
+        <span>IVA</span>
+        <span id="sp-iva">—</span>
+      </div>
+      <div class="sp-fila">
+        <span>Conciliación</span>
+        <span id="sp-concil">—</span>
+      </div>
+      <button class="sp-reset"
+        onclick="if(confirm('¿Borrar todo el progreso guardado?')){ Progreso.resetear(); location.reload(); }">
+        <i class="ti ti-trash" aria-hidden="true"></i> Reiniciar progreso
+      </button>
+    </div>
+
     <div class="sidebar-footer">
       <button class="mode-toggle" onclick="App.toggleTheme()" title="Cambiar tema">
         <i class="ti ti-moon" aria-hidden="true"></i>
@@ -71,7 +89,6 @@
   <!-- MAIN CONTENT -->
   <main class="main" id="main">
 
-    <!-- PLAN DE CUENTAS -->
     <section id="tab-plan" class="tab-panel active">
       <div class="panel-header">
         <h1>Plan de Cuentas</h1>
@@ -80,7 +97,6 @@
       <div id="plan-root"></div>
     </section>
 
-    <!-- ASIENTOS -->
     <section id="tab-asientos" class="tab-panel">
       <div class="panel-header">
         <h1>Asientos Contables</h1>
@@ -89,7 +105,6 @@
       <div id="asientos-root"></div>
     </section>
 
-    <!-- IVA -->
     <section id="tab-iva" class="tab-panel">
       <div class="panel-header">
         <h1>IVA — Impuesto al Valor Agregado</h1>
@@ -98,7 +113,6 @@
       <div id="iva-root"></div>
     </section>
 
-    <!-- CONCILIACIÓN -->
     <section id="tab-concil" class="tab-panel">
       <div class="panel-header">
         <h1>Conciliación Bancaria</h1>
@@ -109,10 +123,8 @@
 
   </main>
 
-  <!-- OVERLAY (mobile sidebar) -->
   <div class="overlay" id="overlay" onclick="App.toggleSidebar()"></div>
 
-  <!-- JS Modules (carga en orden) -->
   <script src="js/utils.js"></script>
   <script src="js/plan-cuentas.js"></script>
   <script src="js/asientos.js"></script>

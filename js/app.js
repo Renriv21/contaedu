@@ -1,21 +1,19 @@
 /* =========================================
-   ContaEdu — Controlador principal (SPA)
+   ContaEdu — Controlador principal v2
+   SPA routing + tema + PWA + progreso
    ========================================= */
 
 const App = (() => {
 
-  /* ---- ESTADO ---- */
-  let tabActual = 'plan';
+  let tabActual   = 'plan';
   let sidebarOpen = false;
-  let darkMode = false;
+  let darkMode    = false;
 
   /* ---- INIT ---- */
   function init() {
-    // Cargar preferencia de tema
     darkMode = localStorage.getItem('contaedu-theme') === 'dark';
     applyTheme();
 
-    // Registrar Service Worker (PWA)
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker
         .register('/service-worker.js')
@@ -23,20 +21,21 @@ const App = (() => {
         .catch(err => console.warn('[ContaEdu] SW error:', err));
     }
 
-    // Inicializar todos los módulos
     PlanCuentas.init();
     Asientos.init();
     IVA.init();
     Conciliacion.init();
 
+    // Mostrar progreso guardado en sidebar
+    refrescarProgreso();
+
     // Restaurar tab desde URL hash
     const hash = window.location.hash.replace('#', '');
     if (['plan','asientos','iva','concil'].includes(hash)) {
       const btn = document.querySelector(`[data-tab="${hash}"]`);
-      showTab(hash, btn);
+      showTab(hash, btn, false);
     }
 
-    // Escuchar cambios de hash (back/forward del browser)
     window.addEventListener('hashchange', () => {
       const h = window.location.hash.replace('#', '');
       const b = document.querySelector(`[data-tab="${h}"]`);
@@ -48,21 +47,14 @@ const App = (() => {
 
   /* ---- NAVEGACIÓN SPA ---- */
   function showTab(id, btn, pushState = true) {
-    // Ocultar panel actual
     document.getElementById(`tab-${tabActual}`)?.classList.remove('active');
     document.querySelector('.nav-item.active')?.classList.remove('active');
 
-    // Mostrar nuevo panel
     tabActual = id;
     document.getElementById(`tab-${id}`)?.classList.add('active');
     if (btn) btn.classList.add('active');
 
-    // Actualizar URL (sin recargar)
-    if (pushState) {
-      history.pushState(null, '', `#${id}`);
-    }
-
-    // Cerrar sidebar en mobile
+    if (pushState) history.pushState(null, '', `#${id}`);
     if (window.innerWidth <= 768) closeSidebar();
   }
 
@@ -70,13 +62,11 @@ const App = (() => {
   function toggleSidebar() {
     sidebarOpen ? closeSidebar() : openSidebar();
   }
-
   function openSidebar() {
     sidebarOpen = true;
     document.getElementById('sidebar')?.classList.add('open');
     document.getElementById('overlay')?.classList.add('active');
   }
-
   function closeSidebar() {
     sidebarOpen = false;
     document.getElementById('sidebar')?.classList.remove('open');
@@ -89,22 +79,87 @@ const App = (() => {
     applyTheme();
     localStorage.setItem('contaedu-theme', darkMode ? 'dark' : 'light');
   }
-
   function applyTheme() {
     document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
-    // Actualizar ícono y label del botón
-    const iconos = document.querySelectorAll('.mode-toggle .ti, .mode-toggle-mobile');
-    iconos.forEach(el => {
+    document.querySelectorAll('.mode-toggle .ti, .mode-toggle-mobile').forEach(el => {
       el.className = el.className.replace(/ti-[a-z-]+/, darkMode ? 'ti-sun' : 'ti-moon');
     });
-    const labels = document.querySelectorAll('.mode-toggle span');
-    labels.forEach(el => { el.textContent = darkMode ? 'Modo claro' : 'Modo oscuro'; });
+    document.querySelectorAll('.mode-toggle span').forEach(el => {
+      el.textContent = darkMode ? 'Modo claro' : 'Modo oscuro';
+    });
   }
 
-  /* ---- API PÚBLICA ---- */
-  return { init, showTab, toggleSidebar, toggleTheme };
+  /* ---- PROGRESO ---- */
+  function refrescarProgreso() {
+    const modulos = [
+      { id: 'plan',     label: 'Plan de Cuentas' },
+      { id: 'asientos', label: 'Asientos'         },
+      { id: 'iva',      label: 'IVA'              },
+      { id: 'concil',   label: 'Conciliación'     },
+    ];
+
+    modulos.forEach(m => {
+      const total       = Progreso.TOTALES[m.id];
+      const completados = Progreso.contarModulo(m.id);
+
+      /* 1. Badge en nav-item */
+      const btn = document.querySelector(`[data-tab="${m.id}"]`);
+      if (btn) {
+        btn.querySelector('.progreso-badge')?.remove();
+        if (completados > 0) {
+          const badge = document.createElement('span');
+          badge.className = 'progreso-badge';
+          if (completados === total) {
+            badge.innerHTML = `<i class="ti ti-check" aria-hidden="true"></i>`;
+            badge.style.cssText = 'font-size:14px;color:#4ADE80';
+          } else {
+            badge.textContent = `${completados}/${total}`;
+            badge.style.cssText = 'font-size:10px;background:rgba(255,255,255,0.15);color:#fff;padding:2px 7px;border-radius:10px;font-family:var(--font-mono)';
+          }
+          btn.appendChild(badge);
+        }
+      }
+
+      /* 2. Panel de progreso */
+      const spanEl = document.getElementById(`sp-${m.id}`);
+      if (spanEl) {
+        const fila = spanEl.closest('.sp-fila');
+        if (completados === 0) {
+          spanEl.textContent = '—';
+          fila?.classList.remove('completo');
+        } else if (completados === total) {
+          spanEl.innerHTML = `<i class="ti ti-check" aria-hidden="true"></i> Completo`;
+          fila?.classList.add('completo');
+        } else {
+          spanEl.textContent = `${completados}/${total}`;
+          fila?.classList.remove('completo');
+        }
+      }
+    });
+
+    /* 3. Barra de progreso global */
+    const pct = Progreso.porcentajeGlobal();
+    let barraWrap = document.getElementById('sp-barra-wrap');
+    if (!barraWrap) {
+      // Crear barra si no existe aún
+      const panel = document.getElementById('sidebar-progreso');
+      if (panel) {
+        barraWrap = document.createElement('div');
+        barraWrap.id = 'sp-barra-wrap';
+        barraWrap.className = 'sp-barra-wrap';
+        barraWrap.innerHTML = `<div class="sp-barra" id="sp-barra" style="width:0%"></div>`;
+        // Insertar antes del botón reset
+        const resetBtn = panel.querySelector('.sp-reset');
+        if (resetBtn) panel.insertBefore(barraWrap, resetBtn);
+        else panel.appendChild(barraWrap);
+      }
+    }
+    const barra = document.getElementById('sp-barra');
+    if (barra) barra.style.width = `${pct}%`;
+  }
+
+  return { init, showTab, toggleSidebar, toggleTheme, refrescarProgreso };
 
 })();
 
-/* ---- ARRANCAR cuando el DOM esté listo ---- */
 document.addEventListener('DOMContentLoaded', App.init);

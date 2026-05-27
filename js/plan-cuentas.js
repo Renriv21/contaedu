@@ -1,66 +1,64 @@
 /* =========================================
-   ContaEdu — Módulo: Plan de Cuentas
+   ContaEdu — Módulo: Plan de Cuentas v2
    ========================================= */
 
 const PlanCuentas = (() => {
 
-  /* ---- DATOS BASE ---- */
+  const MODULO = 'plan';
+
   const CUENTAS_BASE = [
-    { cod: '1.1.01', nombre: 'Caja',                     rubro: 'activo'  },
-    { cod: '1.1.02', nombre: 'Banco cuenta corriente',   rubro: 'activo'  },
-    { cod: '1.1.03', nombre: 'Clientes',                 rubro: 'activo'  },
-    { cod: '1.1.04', nombre: 'Mercaderías',              rubro: 'activo'  },
-    { cod: '1.2.01', nombre: 'Rodados',                  rubro: 'activo'  },
-    { cod: '1.2.02', nombre: 'Muebles y útiles',         rubro: 'activo'  },
-    { cod: '2.1.01', nombre: 'Proveedores',              rubro: 'pasivo'  },
-    { cod: '2.1.02', nombre: 'Sueldos a pagar',          rubro: 'pasivo'  },
-    { cod: '2.2.01', nombre: 'Préstamo bancario LP',     rubro: 'pasivo'  },
-    { cod: '3.1.01', nombre: 'Capital',                  rubro: 'pn'      },
-    { cod: '3.1.02', nombre: 'Resultados acumulados',    rubro: 'pn'      },
-    { cod: '4.1.01', nombre: 'Ventas',                   rubro: 'ingreso' },
-    { cod: '4.1.02', nombre: 'Intereses ganados',        rubro: 'ingreso' },
-    { cod: '5.1.01', nombre: 'Costo mercaderías vendidas', rubro: 'egreso'},
-    { cod: '5.1.02', nombre: 'Sueldos y jornales',       rubro: 'egreso'  },
-    { cod: '5.1.03', nombre: 'Alquileres pagados',       rubro: 'egreso'  },
+    { cod: '1.1.01', nombre: 'Caja',                       rubro: 'activo'  },
+    { cod: '1.1.02', nombre: 'Banco cuenta corriente',     rubro: 'activo'  },
+    { cod: '1.1.03', nombre: 'Clientes',                   rubro: 'activo'  },
+    { cod: '1.1.04', nombre: 'Mercaderías',                rubro: 'activo'  },
+    { cod: '1.2.01', nombre: 'Rodados',                    rubro: 'activo'  },
+    { cod: '1.2.02', nombre: 'Muebles y útiles',           rubro: 'activo'  },
+    { cod: '2.1.01', nombre: 'Proveedores',                rubro: 'pasivo'  },
+    { cod: '2.1.02', nombre: 'Sueldos a pagar',            rubro: 'pasivo'  },
+    { cod: '2.2.01', nombre: 'Préstamo bancario LP',       rubro: 'pasivo'  },
+    { cod: '3.1.01', nombre: 'Capital',                    rubro: 'pn'      },
+    { cod: '3.1.02', nombre: 'Resultados acumulados',      rubro: 'pn'      },
+    { cod: '4.1.01', nombre: 'Ventas',                     rubro: 'ingreso' },
+    { cod: '4.1.02', nombre: 'Intereses ganados',          rubro: 'ingreso' },
+    { cod: '5.1.01', nombre: 'Costo mercaderías vendidas', rubro: 'egreso'  },
+    { cod: '5.1.02', nombre: 'Sueldos y jornales',         rubro: 'egreso'  },
+    { cod: '5.1.03', nombre: 'Alquileres pagados',         rubro: 'egreso'  },
   ];
 
   let cuentas = [...CUENTAS_BASE];
 
-  /* ---- EJERCICIOS ---- */
   const EJERCICIOS = [
     {
       titulo: 'Clasificar 8 cuentas',
       subtitulo: 'Identificá el rubro correcto',
       items: [
-        { cod: '1.1.01', nombre: 'Caja',             rubro: 'activo',  pista: 'Los billetes y monedas son bienes de la empresa.' },
-        { cod: '2.1.01', nombre: 'Proveedores',       rubro: 'pasivo',  pista: 'Deuda comercial = obligación = Pasivo.' },
-        { cod: '1.2.01', nombre: 'Rodados',           rubro: 'activo',  pista: 'Un vehículo es un bien de uso (activo no corriente).' },
-        { cod: '3.1.01', nombre: 'Capital',           rubro: 'pn',      pista: 'Aporte del dueño = Patrimonio Neto.' },
-        { cod: '4.1.01', nombre: 'Ventas',            rubro: 'ingreso', pista: 'Ingresos por la actividad principal.' },
-        { cod: '5.1.02', nombre: 'Sueldos y jornales', rubro: 'egreso', pista: 'Costo laboral = Egreso.' },
-        { cod: '1.1.02', nombre: 'Banco cta. cte.',   rubro: 'activo',  pista: 'El saldo bancario es un derecho de la empresa.' },
+        { cod: '1.1.01', nombre: 'Caja',               rubro: 'activo',  pista: 'Los billetes y monedas son bienes de la empresa.' },
+        { cod: '2.1.01', nombre: 'Proveedores',         rubro: 'pasivo',  pista: 'Deuda comercial = obligación = Pasivo.' },
+        { cod: '1.2.01', nombre: 'Rodados',             rubro: 'activo',  pista: 'Un vehículo es un bien de uso (activo no corriente).' },
+        { cod: '3.1.01', nombre: 'Capital',             rubro: 'pn',      pista: 'Aporte del dueño = Patrimonio Neto.' },
+        { cod: '4.1.01', nombre: 'Ventas',              rubro: 'ingreso', pista: 'Ingresos por la actividad principal.' },
+        { cod: '5.1.02', nombre: 'Sueldos y jornales',  rubro: 'egreso',  pista: 'Costo laboral = Egreso.' },
+        { cod: '1.1.02', nombre: 'Banco cta. cte.',     rubro: 'activo',  pista: 'El saldo bancario es un derecho de la empresa.' },
         { cod: '2.2.01', nombre: 'Préstamo bancario LP', rubro: 'pasivo', pista: 'Deuda a largo plazo con el banco.' },
       ],
     },
     {
       titulo: 'Asignar códigos',
-      subtitulo: 'Elegí el código correcto para cada cuenta',
+      subtitulo: 'Elegí el rubro de cada cuenta',
       items: [
-        { cod: '1.1.03', nombre: 'Clientes',             rubro: 'activo',  pista: 'Derechos a cobrar: Activo corriente → 1.1.xx' },
-        { cod: '1.2.02', nombre: 'Muebles y útiles',     rubro: 'activo',  pista: 'Bien de uso: Activo no corriente → 1.2.xx' },
-        { cod: '2.1.02', nombre: 'Sueldos a pagar',      rubro: 'pasivo',  pista: 'Deuda laboral corriente → 2.1.xx' },
-        { cod: '3.1.02', nombre: 'Resultados acumulados', rubro: 'pn',     pista: 'Ganancias no distribuidas → 3.1.xx' },
-        { cod: '4.1.02', nombre: 'Intereses ganados',    rubro: 'ingreso', pista: 'Ingreso financiero → 4.1.xx' },
-        { cod: '5.1.03', nombre: 'Alquileres pagados',   rubro: 'egreso',  pista: 'Gasto operativo → 5.1.xx' },
+        { cod: '1.1.03', nombre: 'Clientes',              rubro: 'activo',  pista: 'Derechos a cobrar: Activo corriente → 1.1.xx' },
+        { cod: '1.2.02', nombre: 'Muebles y útiles',      rubro: 'activo',  pista: 'Bien de uso: Activo no corriente → 1.2.xx' },
+        { cod: '2.1.02', nombre: 'Sueldos a pagar',       rubro: 'pasivo',  pista: 'Deuda laboral corriente → 2.1.xx' },
+        { cod: '3.1.02', nombre: 'Resultados acumulados', rubro: 'pn',      pista: 'Ganancias no distribuidas → 3.1.xx' },
+        { cod: '4.1.02', nombre: 'Intereses ganados',     rubro: 'ingreso', pista: 'Ingreso financiero → 4.1.xx' },
+        { cod: '5.1.03', nombre: 'Alquileres pagados',    rubro: 'egreso',  pista: 'Gasto operativo → 5.1.xx' },
       ],
     },
   ];
 
-  let ejActual = 0;
-  let ejState = [];
-
-  /* ---- TABS INTERNOS ---- */
-  let innerTab = 'plan';
+  let innerTab  = 'plan';
+  let ejActual  = 0;
+  let ejState   = [];
 
   /* ---- RENDER PRINCIPAL ---- */
   function render() {
@@ -69,10 +67,10 @@ const PlanCuentas = (() => {
     root.innerHTML = `
       <div class="panel-body">
         <div class="inner-tabs">
-          <button class="inner-tab ${innerTab === 'plan' ? 'active' : ''}" onclick="PlanCuentas.switchTab('plan')">
+          <button class="inner-tab ${innerTab === 'plan'      ? 'active' : ''}" onclick="PlanCuentas.switchTab('plan')">
             <i class="ti ti-list" aria-hidden="true"></i> Ver plan
           </button>
-          <button class="inner-tab ${innerTab === 'agregar' ? 'active' : ''}" onclick="PlanCuentas.switchTab('agregar')">
+          <button class="inner-tab ${innerTab === 'agregar'   ? 'active' : ''}" onclick="PlanCuentas.switchTab('agregar')">
             <i class="ti ti-plus" aria-hidden="true"></i> Agregar cuenta
           </button>
           <button class="inner-tab ${innerTab === 'ejercicio' ? 'active' : ''}" onclick="PlanCuentas.switchTab('ejercicio')">
@@ -92,7 +90,7 @@ const PlanCuentas = (() => {
     if (innerTab === 'ejercicio') el.innerHTML = renderEjercicio();
   }
 
-  /* ---- TAB: VER PLAN ---- */
+  /* ---- VER PLAN ---- */
   function renderVerPlan() {
     const filas = cuentas.map(c => `
       <tr>
@@ -100,7 +98,6 @@ const PlanCuentas = (() => {
         <td style="font-weight:500">${c.nombre}</td>
         <td>${Utils.badgeRubro(c.rubro)}</td>
       </tr>`).join('');
-
     return `
       <div class="teoria">
         <strong>Plan de Cuentas:</strong> Lista ordenada de cuentas clasificadas por <strong>rubro</strong>.
@@ -110,16 +107,14 @@ const PlanCuentas = (() => {
       <div class="card" style="padding:0">
         <div class="table-wrap">
           <table>
-            <thead>
-              <tr><th>Código</th><th>Nombre de cuenta</th><th>Rubro</th></tr>
-            </thead>
+            <thead><tr><th>Código</th><th>Nombre de cuenta</th><th>Rubro</th></tr></thead>
             <tbody>${filas}</tbody>
           </table>
         </div>
       </div>`;
   }
 
-  /* ---- TAB: AGREGAR ---- */
+  /* ---- AGREGAR ---- */
   function renderAgregar() {
     return `
       <div class="card">
@@ -154,27 +149,32 @@ const PlanCuentas = (() => {
       </div>`;
   }
 
-  /* ---- TAB: EJERCICIOS ---- */
+  /* ---- EJERCICIOS ---- */
   function renderEjercicio() {
     const ej = EJERCICIOS[ejActual];
-    const state = ejState;
 
-    const tarjetas = EJERCICIOS.map((e, i) => `
-      <div class="ej-card ${ejActual === i ? 'selected' : ''}" onclick="PlanCuentas.selectEj(${i})">
-        <div class="ej-card-title">${e.titulo}</div>
-        <div class="ej-card-sub">${e.subtitulo}</div>
-      </div>`).join('');
+    const tarjetas = EJERCICIOS.map((e, i) => {
+      const yaCompleto = Progreso.estaCompleto(MODULO, i);
+      return `
+        <div class="ej-card ${ejActual === i ? 'selected' : ''}" onclick="PlanCuentas.selectEj(${i})">
+          ${yaCompleto ? `<span class="ej-completado"><i class="ti ti-check" aria-hidden="true"></i></span>` : ''}
+          <div class="ej-card-title">${e.titulo}</div>
+          <div class="ej-card-sub">${e.subtitulo}</div>
+        </div>`;
+    }).join('');
 
     let correctos = 0;
     const filas = ej.items.map((item, i) => {
-      const s = state[i] || { val: '', mostradaPista: false };
+      const s = ejState[i] || { val: '', mostradaPista: false };
       const isOk = s.val === item.rubro;
       if (isOk) correctos++;
+
       const iconoEstado = s.val
         ? (isOk
             ? `<span style="color:var(--success)"><i class="ti ti-check" aria-hidden="true"></i> Correcto</span>`
             : `<span style="color:var(--danger)"><i class="ti ti-x" aria-hidden="true"></i> Revisá</span>`)
         : '';
+
       const pistaHtml = s.mostradaPista
         ? `<div class="alert alert-warning" style="margin-top:6px;font-size:12px"><i class="ti ti-bulb" aria-hidden="true"></i> ${item.pista}</div>`
         : `<button class="btn btn-warning btn-sm" onclick="PlanCuentas.pista(${i})"><i class="ti ti-bulb" aria-hidden="true"></i> Pista</button>`;
@@ -199,9 +199,15 @@ const PlanCuentas = (() => {
         </tr>`;
     }).join('');
 
+    /* Detectar completado y guardar progreso */
+    if (correctos === ej.items.length) {
+      Progreso.completar(MODULO, ejActual);
+      App.refrescarProgreso();
+    }
+
     const finalMsg = correctos === ej.items.length
-      ? Utils.alert('ok', 'trophy', '¡Ejercicio completo! Excelente trabajo.')
-      : `<p style="font-size:12px;color:var(--text-muted)">Correctas: ${correctos} / ${ej.items.length}</p>`;
+      ? Utils.alert('ok', 'trophy', '¡Ejercicio completo! Excelente trabajo. El progreso fue guardado.')
+      : `<p style="font-size:12px;color:var(--text-muted);margin-top:8px">Correctas: ${correctos} / ${ej.items.length}</p>`;
 
     return `
       <div class="ej-grid">${tarjetas}</div>
@@ -213,14 +219,11 @@ const PlanCuentas = (() => {
           </table>
         </div>
       </div>
-      <div style="padding:0 0 .5rem">${finalMsg}</div>`;
+      <div>${finalMsg}</div>`;
   }
 
   /* ---- ACCIONES ---- */
-  function switchTab(tab) {
-    innerTab = tab;
-    render();
-  }
+  function switchTab(tab) { innerTab = tab; render(); }
 
   function agregar() {
     const cod    = document.getElementById('pc-cod')?.value.trim();
@@ -255,7 +258,6 @@ const PlanCuentas = (() => {
     renderInner();
   }
 
-  /* ---- INIT ---- */
   function init() {
     ejState = EJERCICIOS[0].items.map(() => ({ val: '', mostradaPista: false }));
     render();

@@ -1,22 +1,22 @@
 /* =========================================
-   ContaEdu — Módulo: IVA
+   ContaEdu — Módulo: IVA v2
    ========================================= */
 
 const IVA = (() => {
 
-  const TASA = 0.21;
+  const MODULO = 'iva';
+  const TASA   = 0.21;
 
-  /* ---- EJERCICIOS ---- */
   const EJERCICIOS = [
     {
       titulo: 'Mes de Marzo',
       subtitulo: 'Ventas y compras mixtas',
-      contexto: 'Registrá el IVA de cada operación de marzo y determiná la posición fiscal mensual.',
+      contexto: 'Calculá el IVA de cada operación de marzo y determiná la posición fiscal mensual.',
       ops: [
-        { tipo: 'venta',  desc: 'Venta de mercadería a López',       neto: 50000 },
-        { tipo: 'venta',  desc: 'Venta de servicio técnico',          neto: 15000 },
-        { tipo: 'compra', desc: 'Compra de mercadería al proveedor',  neto: 30000 },
-        { tipo: 'compra', desc: 'Compra de insumos de oficina',       neto: 8000  },
+        { tipo: 'venta',  desc: 'Venta de mercadería a López',      neto: 50000 },
+        { tipo: 'venta',  desc: 'Venta de servicio técnico',         neto: 15000 },
+        { tipo: 'compra', desc: 'Compra de mercadería al proveedor', neto: 30000 },
+        { tipo: 'compra', desc: 'Compra de insumos de oficina',      neto: 8000  },
       ],
     },
     {
@@ -24,10 +24,10 @@ const IVA = (() => {
       subtitulo: 'Posición a pagar',
       contexto: 'Calculá el IVA de las operaciones de abril. ¿Habrá saldo a pagar o a favor?',
       ops: [
-        { tipo: 'venta',  desc: 'Venta al contado — Cliente A',       neto: 80000 },
-        { tipo: 'venta',  desc: 'Venta a crédito — Cliente B',        neto: 20000 },
-        { tipo: 'compra', desc: 'Compra principal de mercadería',     neto: 40000 },
-        { tipo: 'compra', desc: 'Compra de muebles de oficina',       neto: 5000  },
+        { tipo: 'venta',  desc: 'Venta al contado — Cliente A',      neto: 80000 },
+        { tipo: 'venta',  desc: 'Venta a crédito — Cliente B',       neto: 20000 },
+        { tipo: 'compra', desc: 'Compra principal de mercadería',    neto: 40000 },
+        { tipo: 'compra', desc: 'Compra de muebles de oficina',      neto: 5000  },
       ],
     },
     {
@@ -35,19 +35,16 @@ const IVA = (() => {
       subtitulo: 'Saldo a favor',
       contexto: 'En mayo las compras superan las ventas. Calculá la posición y verificá si queda saldo a favor.',
       ops: [
-        { tipo: 'venta',  desc: 'Venta única del mes',                neto: 10000 },
-        { tipo: 'compra', desc: 'Compra de maquinaria',               neto: 60000 },
-        { tipo: 'compra', desc: 'Compra de mercadería para reventa',  neto: 25000 },
+        { tipo: 'venta',  desc: 'Venta única del mes',               neto: 10000 },
+        { tipo: 'compra', desc: 'Compra de maquinaria',              neto: 60000 },
+        { tipo: 'compra', desc: 'Compra de mercadería para reventa', neto: 25000 },
       ],
     },
   ];
 
-  /* ---- ESTADO ---- */
   let innerTab = 'ejercicio';
   let ejActual = 0;
   let ejState  = [];
-
-  /* Registro libre */
   let movimientos = [];
 
   /* ---- RENDER PRINCIPAL ---- */
@@ -76,34 +73,46 @@ const IVA = (() => {
     if (innerTab === 'libre')     el.innerHTML = renderLibre();
   }
 
-  /* ---- TAB: EJERCICIOS ---- */
+  /* ---- EJERCICIOS ---- */
   function renderEjercicio() {
     const ej    = EJERCICIOS[ejActual];
     const state = ejState;
 
-    const tarjetas = EJERCICIOS.map((e, i) => `
-      <div class="ej-card ${ejActual === i ? 'selected' : ''}" onclick="IVA.selectEj(${i})">
-        <div class="ej-card-title">${e.titulo}</div>
-        <div class="ej-card-sub">${e.subtitulo}</div>
-      </div>`).join('');
+    const tarjetas = EJERCICIOS.map((e, i) => {
+      const yaCompleto = Progreso.estaCompleto(MODULO, i);
+      return `
+        <div class="ej-card ${ejActual === i ? 'selected' : ''}" onclick="IVA.selectEj(${i})">
+          ${yaCompleto ? `<span class="ej-completado"><i class="ti ti-check" aria-hidden="true"></i></span>` : ''}
+          <div class="ej-card-title">${e.titulo}</div>
+          <div class="ej-card-sub">${e.subtitulo}</div>
+        </div>`;
+    }).join('');
 
     let debF = 0, crF = 0;
     ej.ops.forEach((op, i) => {
       if (state[i]?.ok) {
-        if (op.tipo === 'venta')  debF += op.neto * TASA;
-        else                      crF  += op.neto * TASA;
+        if (op.tipo === 'venta') debF += op.neto * TASA;
+        else                     crF  += op.neto * TASA;
       }
     });
     const saldo = debF - crF;
     const completados = state.filter(s => s?.ok).length;
 
+    /* Guardar progreso si todos completos */
+    if (completados === ej.ops.length) {
+      Progreso.completar(MODULO, ejActual);
+      App.refrescarProgreso();
+    }
+
     const filas = ej.ops.map((op, i) => {
       const s = state[i] || {};
       const correcto = op.neto * TASA;
       let estadoHtml = '';
-      if (s.ok)          estadoHtml = `<span style="color:var(--success);font-size:12px"><i class="ti ti-check" aria-hidden="true"></i> ${Utils.formatARS(correcto)}</span>`;
-      else if (s.val !== undefined && s.verificado)
-                         estadoHtml = `<span style="color:var(--danger);font-size:12px"><i class="ti ti-x" aria-hidden="true"></i> Revisá</span>`;
+      if (s.ok)
+        estadoHtml = `<span style="color:var(--success);font-size:12px"><i class="ti ti-check" aria-hidden="true"></i> ${Utils.formatARS(correcto)}</span>`;
+      else if (s.verificado)
+        estadoHtml = `<span style="color:var(--danger);font-size:12px"><i class="ti ti-x" aria-hidden="true"></i> Revisá</span>`;
+
       const pistaHtml = s.mostradaPista
         ? `<div class="alert alert-warning" style="margin-top:4px;font-size:12px"><i class="ti ti-bulb" aria-hidden="true"></i> ${Utils.formatARS(op.neto)} × 0,21 = ${Utils.formatARS(correcto)}</div>`
         : `<button class="btn btn-warning btn-sm" onclick="IVA.pista(${i})"><i class="ti ti-bulb" aria-hidden="true"></i> Pista</button>`;
@@ -111,7 +120,7 @@ const IVA = (() => {
       return `
         <tr>
           <td>
-            <span class="badge ${op.tipo === 'venta' ? 'badge-venta' : 'badge-compra'}">${op.tipo}</span>
+            <span class="badge ${op.tipo==='venta'?'badge-venta':'badge-compra'}">${op.tipo}</span>
             <span style="margin-left:6px;font-size:13px">${op.desc}</span>
           </td>
           <td class="td-num">${Utils.formatARS(op.neto)}</td>
@@ -135,21 +144,15 @@ const IVA = (() => {
       posicionHtml = `
         <hr class="divider">
         <div class="stat-grid">
-          <div class="stat-card">
-            <div class="stat-label">Débito Fiscal (ventas)</div>
-            <div class="stat-value">${Utils.formatARS(debF)}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Crédito Fiscal (compras)</div>
-            <div class="stat-value">${Utils.formatARS(crF)}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Posición IVA</div>
-            <div class="stat-value" style="color:${saldoColor}">${saldoLabel}: ${Utils.formatARS(Math.abs(saldo))}</div>
-          </div>
+          <div class="stat-card"><div class="stat-label">Débito Fiscal</div><div class="stat-value">${Utils.formatARS(debF)}</div></div>
+          <div class="stat-card"><div class="stat-label">Crédito Fiscal</div><div class="stat-value">${Utils.formatARS(crF)}</div></div>
+          <div class="stat-card"><div class="stat-label">Posición IVA</div><div class="stat-value" style="color:${saldoColor}">${saldoLabel}: ${Utils.formatARS(Math.abs(saldo))}</div></div>
         </div>`;
     }
-    const finalMsg = completados === ej.ops.length ? Utils.alert('ok', 'trophy', '¡Posición fiscal completa! Muy bien.') : '';
+
+    const finalMsg = completados === ej.ops.length
+      ? Utils.alert('ok', 'trophy', '¡Posición fiscal completa! Progreso guardado.')
+      : '';
 
     return `
       <div class="teoria">
@@ -172,25 +175,25 @@ const IVA = (() => {
       </div>`;
   }
 
-  /* ---- TAB: CALCULADORA LIBRE ---- */
+  /* ---- CALCULADORA LIBRE ---- */
   function renderLibre() {
     let totDeb = 0, totCred = 0;
     movimientos.forEach(m => {
-      if (m.tipo === 'venta')  totDeb  += m.iva;
-      else                     totCred += m.iva;
+      if (m.tipo === 'venta') totDeb  += m.iva;
+      else                    totCred += m.iva;
     });
     const saldo = totDeb - totCred;
 
     const filas = movimientos.length
-      ? movimientos.map((m, i) => `
+      ? movimientos.map(m => `
           <tr>
-            <td><span class="badge ${m.tipo === 'venta' ? 'badge-venta' : 'badge-compra'}">${m.tipo}</span></td>
+            <td><span class="badge ${m.tipo==='venta'?'badge-venta':'badge-compra'}">${m.tipo}</span></td>
             <td>${m.desc}</td>
             <td class="td-num">${Utils.formatARS(m.neto)}</td>
-            <td class="td-num">${m.tipo === 'venta'  ? Utils.formatARS(m.iva) : ''}</td>
-            <td class="td-num">${m.tipo === 'compra' ? Utils.formatARS(m.iva) : ''}</td>
+            <td class="td-num">${m.tipo==='venta'  ? Utils.formatARS(m.iva) : ''}</td>
+            <td class="td-num">${m.tipo==='compra' ? Utils.formatARS(m.iva) : ''}</td>
           </tr>`).join('')
-      : `<tr><td colspan="5" style="color:var(--text-muted);text-align:center;padding:1rem">Sin operaciones registradas.</td></tr>`;
+      : `<tr><td colspan="5" style="color:var(--text-muted);text-align:center;padding:1rem">Sin operaciones.</td></tr>`;
 
     return `
       <div class="card">
@@ -198,10 +201,7 @@ const IVA = (() => {
         <div class="form-row">
           <div class="form-group">
             <label>Tipo</label>
-            <select id="iv-tipo" style="width:110px">
-              <option value="venta">Venta</option>
-              <option value="compra">Compra</option>
-            </select>
+            <select id="iv-tipo" style="width:110px"><option value="venta">Venta</option><option value="compra">Compra</option></select>
           </div>
           <div class="form-group" style="flex:1;min-width:160px">
             <label>Descripción</label>
@@ -213,12 +213,10 @@ const IVA = (() => {
           </div>
           <div class="form-group">
             <label>&nbsp;</label>
-            <button class="btn btn-primary" onclick="IVA.registrarLibre()">
-              <i class="ti ti-plus" aria-hidden="true"></i> Agregar
-            </button>
+            <button class="btn btn-primary" onclick="IVA.registrarLibre()"><i class="ti ti-plus" aria-hidden="true"></i> Agregar</button>
           </div>
         </div>
-        <div id="iv-preview" style="font-size:12px;color:var(--text-secondary);margin-bottom:8px"></div>
+        <div id="iv-preview" style="font-size:12px;color:var(--text-secondary);margin-bottom:6px"></div>
         <div id="iv-msg"></div>
       </div>
       <div class="card" style="padding:0">
@@ -228,17 +226,11 @@ const IVA = (() => {
             <tbody>${filas}</tbody>
             ${movimientos.length ? `
             <tfoot>
-              <tr class="td-total">
-                <td colspan="3">Totales</td>
-                <td class="td-num">${Utils.formatARS(totDeb)}</td>
-                <td class="td-num">${Utils.formatARS(totCred)}</td>
-              </tr>
-              <tr>
-                <td colspan="4" style="font-weight:500">Posición IVA</td>
+              <tr class="td-total"><td colspan="3">Totales</td><td class="td-num">${Utils.formatARS(totDeb)}</td><td class="td-num">${Utils.formatARS(totCred)}</td></tr>
+              <tr><td colspan="4" style="font-weight:500">Posición IVA</td>
                 <td class="td-num" style="font-weight:600;color:${saldo>=0?'var(--danger)':'var(--success)'}">
-                  ${saldo >= 0 ? 'A pagar' : 'A favor'}: ${Utils.formatARS(Math.abs(saldo))}
-                </td>
-              </tr>
+                  ${saldo>=0?'A pagar':'A favor'}: ${Utils.formatARS(Math.abs(saldo))}
+                </td></tr>
             </tfoot>` : ''}
           </table>
         </div>
@@ -246,7 +238,7 @@ const IVA = (() => {
       ${movimientos.length ? `<button class="btn btn-sm" onclick="IVA.limpiarLibre()"><i class="ti ti-trash" aria-hidden="true"></i> Limpiar</button>` : ''}`;
   }
 
-  /* ---- ACCIONES EJERCICIO ---- */
+  /* ---- ACCIONES ---- */
   function selectEj(idx) {
     ejActual = idx;
     ejState  = EJERCICIOS[idx].ops.map(() => ({}));
@@ -273,15 +265,13 @@ const IVA = (() => {
     renderInner();
   }
 
-  /* ---- ACCIONES LIBRE ---- */
   function preview() {
     const neto = parseFloat(document.getElementById('iv-neto')?.value) || 0;
     const el   = document.getElementById('iv-preview');
     if (!el) return;
     if (!neto) { el.textContent = ''; return; }
-    const iva   = Utils.calcIVA(neto);
-    const total = neto + iva;
-    el.innerHTML = `IVA (21%) = <strong>${Utils.formatARS(iva)}</strong> — Total factura = <strong>${Utils.formatARS(total)}</strong>`;
+    const iva = Utils.calcIVA(neto);
+    el.innerHTML = `IVA (21%) = <strong>${Utils.formatARS(iva)}</strong> — Total factura = <strong>${Utils.formatARS(neto + iva)}</strong>`;
   }
 
   function registrarLibre() {
@@ -290,7 +280,7 @@ const IVA = (() => {
     const neto = parseFloat(document.getElementById('iv-neto')?.value) || 0;
     const msg  = document.getElementById('iv-msg');
     if (!desc || !neto) {
-      if (msg) msg.innerHTML = Utils.alert('err', 'alert-circle', 'Completá descripción y neto.');
+      if (msg) msg.innerHTML = Utils.alert('err','alert-circle','Completá descripción y neto.');
       return;
     }
     movimientos.push({ tipo, desc, neto, iva: Utils.calcIVA(neto) });
@@ -301,18 +291,11 @@ const IVA = (() => {
   }
 
   function limpiarLibre() {
-    if (confirm('¿Limpiar todas las operaciones?')) {
-      movimientos = [];
-      renderInner();
-    }
+    if (confirm('¿Limpiar todas las operaciones?')) { movimientos = []; renderInner(); }
   }
 
-  function switchTab(tab) {
-    innerTab = tab;
-    render();
-  }
+  function switchTab(tab) { innerTab = tab; render(); }
 
-  /* ---- INIT ---- */
   function init() {
     ejState = EJERCICIOS[0].ops.map(() => ({}));
     render();
