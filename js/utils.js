@@ -53,11 +53,11 @@ const Progreso = {
 
   /* Totales de ejercicios por módulo */
   TOTALES: {
-    plan:     2,
-    asientos: 3,
-    iva:      3,
-    concil:   2,
-    mayor:    2,
+    plan:     6,
+    asientos: 6,
+    iva:      6,
+    concil:   5,
+    mayor:    5,
   },
 
   /* Carga todo el progreso guardado */

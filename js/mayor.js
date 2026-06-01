@@ -9,7 +9,7 @@ const Mayor = (() => {
   const EJERCICIOS = [
     {
       titulo: 'Mayorización Básica',
-      subtitulo: 'Caja, Banco, Capital y Muebles',
+      subtitulo: '⭐ Básico — Caja, Banco, Capital y Muebles',
       contexto: `
         <strong>Libro Diario (Resumen):</strong><br>
         1. Inicio: Caja $10.000 y Banco $20.000 a Capital $30.000.<br>
@@ -17,9 +17,9 @@ const Mayor = (() => {
         3. Depósito en Banco de $2.000 en efectivo (Caja).
       `,
       cuentas: [
-        { nombre: 'Caja',           debe: [10000],        haber: [5000, 2000], totD: 10000, totH: 7000,  saldoTipo: 'deudor',   saldoVal: 3000  },
-        { nombre: 'Banco cta. cte.',debe: [20000, 2000],  haber: [],           totD: 22000, totH: 0,     saldoTipo: 'deudor',   saldoVal: 22000 },
-        { nombre: 'Capital',        debe: [],              haber: [30000],      totD: 0,     totH: 30000, saldoTipo: 'acreedor', saldoVal: 30000 },
+        { nombre: 'Caja',            debe: [10000],       haber: [5000, 2000], totD: 10000, totH: 7000,  saldoTipo: 'deudor',   saldoVal: 3000  },
+        { nombre: 'Banco cta. cte.', debe: [20000, 2000], haber: [],           totD: 22000, totH: 0,     saldoTipo: 'deudor',   saldoVal: 22000 },
+        { nombre: 'Capital',         debe: [],             haber: [30000],      totD: 0,     totH: 30000, saldoTipo: 'acreedor', saldoVal: 30000 },
         { nombre: 'Muebles y Útiles',debe: [5000],        haber: [],           totD: 5000,  totH: 0,     saldoTipo: 'deudor',   saldoVal: 5000  }
       ],
       balSumas: 37000,
@@ -27,7 +27,7 @@ const Mayor = (() => {
     },
     {
       titulo: 'Operaciones Comerciales',
-      subtitulo: 'Mercaderías, Ventas, Caja y Proveedores',
+      subtitulo: '⭐⭐ Intermedio — Mercaderías, Ventas, Caja y Proveedores',
       contexto: `
         <strong>Libro Diario (Resumen):</strong><br>
         1. Compra de Mercaderías por $10.000 a crédito (Proveedores).<br>
@@ -43,6 +43,73 @@ const Mayor = (() => {
       ],
       balSumas: 31000,
       balSaldos: 25000
+    },
+    {
+      titulo: 'Empresa de servicios',
+      subtitulo: '⭐⭐ Intermedio — Honorarios y gastos',
+      contexto: `
+        <strong>Libro Diario (Resumen):</strong><br>
+        1. Apertura: Banco $50.000 a Capital $50.000.<br>
+        2. Prestación de servicio a cliente por $20.000 a crédito (Clientes).<br>
+        3. Pago de alquiler de oficina por $8.000 en efectivo (Caja).<br>
+        4. Cobro del cliente por Banco $20.000.
+      `,
+      cuentas: [
+        { nombre: 'Banco cta. cte.', debe: [50000, 20000], haber: [],       totD: 70000, totH: 0,     saldoTipo: 'deudor',   saldoVal: 70000 },
+        { nombre: 'Capital',         debe: [],              haber: [50000],  totD: 0,     totH: 50000, saldoTipo: 'acreedor', saldoVal: 50000 },
+        { nombre: 'Clientes',        debe: [20000],         haber: [20000],  totD: 20000, totH: 20000, saldoTipo: 'saldada',  saldoVal: 0     },
+        { nombre: 'Honorarios gan.', debe: [],              haber: [20000],  totD: 0,     totH: 20000, saldoTipo: 'acreedor', saldoVal: 20000 },
+        { nombre: 'Alquileres',      debe: [8000],          haber: [],       totD: 8000,  totH: 0,     saldoTipo: 'deudor',   saldoVal: 8000  },
+        { nombre: 'Caja',            debe: [],              haber: [8000],   totD: 0,     totH: 8000,  saldoTipo: 'acreedor', saldoVal: 8000  }
+      ],
+      balSumas: 98000,
+      balSaldos: 78000
+    },
+    {
+      titulo: 'Ciclo completo',
+      subtitulo: '⭐⭐⭐ Avanzado — 6 cuentas con sueldo',
+      contexto: `
+        <strong>Libro Diario (Resumen):</strong><br>
+        1. Inicio: Banco $100.000 a Capital $100.000.<br>
+        2. Compra mercadería $40.000 a crédito (Proveedores).<br>
+        3. Venta de mercadería $60.000 al contado (Caja). CMV $30.000.<br>
+        4. Pago sueldos $15.000 por Banco.
+      `,
+      cuentas: [
+        { nombre: 'Banco cta. cte.', debe: [100000],      haber: [15000],  totD: 100000, totH: 15000, saldoTipo: 'deudor',   saldoVal: 85000  },
+        { nombre: 'Capital',         debe: [],             haber: [100000], totD: 0,      totH: 100000,saldoTipo: 'acreedor', saldoVal: 100000 },
+        { nombre: 'Mercaderías',     debe: [40000],        haber: [30000],  totD: 40000,  totH: 30000, saldoTipo: 'deudor',   saldoVal: 10000  },
+        { nombre: 'Proveedores',     debe: [],             haber: [40000],  totD: 0,      totH: 40000, saldoTipo: 'acreedor', saldoVal: 40000  },
+        { nombre: 'Caja',            debe: [60000],        haber: [],       totD: 60000,  totH: 0,     saldoTipo: 'deudor',   saldoVal: 60000  },
+        { nombre: 'Ventas',          debe: [],             haber: [60000],  totD: 0,      totH: 60000, saldoTipo: 'acreedor', saldoVal: 60000  },
+        { nombre: 'C.M.V.',          debe: [30000],        haber: [],       totD: 30000,  totH: 0,     saldoTipo: 'deudor',   saldoVal: 30000  },
+        { nombre: 'Sueldos',         debe: [15000],        haber: [],       totD: 15000,  totH: 0,     saldoTipo: 'deudor',   saldoVal: 15000  }
+      ],
+      balSumas: 200000,
+      balSaldos: 160000
+    },
+    {
+      titulo: 'Empresa con préstamo',
+      subtitulo: '⭐⭐⭐ Avanzado — Financiamiento bancario',
+      contexto: `
+        <strong>Libro Diario (Resumen):</strong><br>
+        1. Capital inicial en Caja $30.000.<br>
+        2. Préstamo bancario acreditado en Banco $80.000.<br>
+        3. Compra de maquinaria $90.000 pagando $30.000 efectivo y el resto con Banco.<br>
+        4. Ingreso por servicios prestados $25.000 cobrado en Banco.<br>
+        5. Pago de cuota préstamo: $5.000 capital + $2.000 intereses por Banco.
+      `,
+      cuentas: [
+        { nombre: 'Caja',            debe: [30000],        haber: [30000],  totD: 30000,  totH: 30000, saldoTipo: 'saldada',  saldoVal: 0      },
+        { nombre: 'Banco cta. cte.', debe: [80000, 25000], haber: [60000, 7000], totD: 105000, totH: 67000, saldoTipo: 'deudor', saldoVal: 38000 },
+        { nombre: 'Préstamo banc.',  debe: [5000],         haber: [80000],  totD: 5000,   totH: 80000, saldoTipo: 'acreedor', saldoVal: 75000  },
+        { nombre: 'Maquinaria',      debe: [90000],        haber: [],       totD: 90000,  totH: 0,     saldoTipo: 'deudor',   saldoVal: 90000  },
+        { nombre: 'Capital',         debe: [],             haber: [30000],  totD: 0,      totH: 30000, saldoTipo: 'acreedor', saldoVal: 30000  },
+        { nombre: 'Honorarios gan.', debe: [],             haber: [25000],  totD: 0,      totH: 25000, saldoTipo: 'acreedor', saldoVal: 25000  },
+        { nombre: 'Intereses pag.',  debe: [2000],         haber: [],       totD: 2000,   totH: 0,     saldoTipo: 'deudor',   saldoVal: 2000   }
+      ],
+      balSumas: 162000,
+      balSaldos: 132000
     }
   ];
 
@@ -195,6 +262,9 @@ const Mayor = (() => {
         } else if (c.saldoTipo === 'acreedor') {
           salAOk = Utils.numEq(vSalA, c.saldoVal);
           salDOk = numSalD === 0;
+        } else if (c.saldoTipo === 'saldada') {
+          salDOk = numSalD === 0;
+          salAOk = numSalA === 0;
         }
 
         const clsSD  = rs.verificadoP3 ? (Utils.numEq(vSD,  c.totD)  ? 'ok' : 'err') : '';
@@ -405,6 +475,9 @@ const Mayor = (() => {
       } else if (c.saldoTipo === 'acreedor') {
         salAOk = Utils.numEq(vSalA, c.saldoVal);
         salDOk = vSalD === 0;
+      } else if (c.saldoTipo === 'saldada') {
+        salDOk = vSalD === 0;
+        salAOk = vSalA === 0;
       }
 
       if (!Utils.numEq(vSD, c.totD) || !Utils.numEq(vSH, c.totH) || !salDOk || !salAOk) {
@@ -440,6 +513,6 @@ const Mayor = (() => {
     render();
   }
 
-  return { init, selectEj, inputVal, verificarPaso1, verificarPaso2, verificarPaso3, siguiente };
+  return { init, selectEj, inputVal, verificarPaso1, verificarPaso2, verificarPaso3, siguiente, EJERCICIOS };
 
 })();

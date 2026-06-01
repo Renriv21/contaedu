@@ -30,7 +30,7 @@ const PlanCuentas = (() => {
   const EJERCICIOS = [
     {
       titulo: 'Clasificar 8 cuentas',
-      subtitulo: 'Identificá el rubro correcto',
+      subtitulo: '⭐ Básico — Identificá el rubro correcto',
       items: [
         { cod: '1.1.01', nombre: 'Caja',               rubro: 'activo',  pista: 'Los billetes y monedas son bienes de la empresa.' },
         { cod: '2.1.01', nombre: 'Proveedores',         rubro: 'pasivo',  pista: 'Deuda comercial = obligación = Pasivo.' },
@@ -44,7 +44,7 @@ const PlanCuentas = (() => {
     },
     {
       titulo: 'Asignar códigos',
-      subtitulo: 'Elegí el rubro de cada cuenta',
+      subtitulo: '⭐ Básico — Elegí el rubro de cada cuenta',
       items: [
         { cod: '1.1.03', nombre: 'Clientes',              rubro: 'activo',  pista: 'Derechos a cobrar: Activo corriente → 1.1.xx' },
         { cod: '1.2.02', nombre: 'Muebles y útiles',      rubro: 'activo',  pista: 'Bien de uso: Activo no corriente → 1.2.xx' },
@@ -52,6 +52,62 @@ const PlanCuentas = (() => {
         { cod: '3.1.02', nombre: 'Resultados acumulados', rubro: 'pn',      pista: 'Ganancias no distribuidas → 3.1.xx' },
         { cod: '4.1.02', nombre: 'Intereses ganados',     rubro: 'ingreso', pista: 'Ingreso financiero → 4.1.xx' },
         { cod: '5.1.03', nombre: 'Alquileres pagados',    rubro: 'egreso',  pista: 'Gasto operativo → 5.1.xx' },
+      ],
+    },
+    {
+      titulo: 'Corrientes vs No corrientes',
+      subtitulo: '⭐⭐ Intermedio — Activos y Pasivos por plazo',
+      items: [
+        { cod: '1.1.04', nombre: 'Mercaderías',             rubro: 'activo',  pista: 'Bienes para vender: Activo corriente.' },
+        { cod: '1.1.05', nombre: 'Deudores por ventas',     rubro: 'activo',  pista: 'Crédito comercial a corto plazo: Activo corriente.' },
+        { cod: '1.2.03', nombre: 'Inmuebles',               rubro: 'activo',  pista: 'Bienes de uso de larga vida: Activo no corriente.' },
+        { cod: '2.1.03', nombre: 'Anticipos de clientes',   rubro: 'pasivo',  pista: 'Cobro adelantado a devolver/entregar: Pasivo corriente.' },
+        { cod: '2.2.02', nombre: 'Hipoteca bancaria',       rubro: 'pasivo',  pista: 'Deuda garantizada con inmueble a largo plazo.' },
+        { cod: '5.1.04', nombre: 'Amortizaciones',          rubro: 'egreso',  pista: 'Desgaste de bienes de uso: Egreso.' },
+        { cod: '4.1.03', nombre: 'Alquileres cobrados',     rubro: 'ingreso', pista: 'Ingreso por ceder el uso de un bien.' },
+        { cod: '3.1.03', nombre: 'Reserva legal',           rubro: 'pn',      pista: 'Ganancia retenida por ley: Patrimonio Neto.' },
+      ],
+    },
+    {
+      titulo: 'Empresa de servicios',
+      subtitulo: '⭐⭐ Intermedio — Cuentas de consultora',
+      items: [
+        { cod: '1.1.06', nombre: 'Honorarios a cobrar',     rubro: 'activo',  pista: 'Servicio prestado y aún no cobrado: Activo corriente.' },
+        { cod: '1.1.07', nombre: 'Gastos pagados por anticipado', rubro: 'activo', pista: 'Gasto que beneficia períodos futuros: Activo corriente.' },
+        { cod: '2.1.04', nombre: 'Honorarios a pagar',      rubro: 'pasivo',  pista: 'Servicio recibido y aún no pagado: Pasivo corriente.' },
+        { cod: '4.1.04', nombre: 'Honorarios ganados',      rubro: 'ingreso', pista: 'Ingreso por prestación de servicios profesionales.' },
+        { cod: '5.1.05', nombre: 'Viáticos',                rubro: 'egreso',  pista: 'Gastos de viaje del personal: Egreso operativo.' },
+        { cod: '5.1.06', nombre: 'Servicios públicos',      rubro: 'egreso',  pista: 'Luz, gas, internet: Egreso operativo.' },
+        { cod: '3.1.01', nombre: 'Capital social',          rubro: 'pn',      pista: 'Aportes de los socios.' },
+        { cod: '5.1.07', nombre: 'Impuestos y tasas',       rubro: 'egreso',  pista: 'Cargas fiscales de la empresa: Egreso.' },
+      ],
+    },
+    {
+      titulo: 'Empresa industrial',
+      subtitulo: '⭐⭐⭐ Avanzado — Manufactura',
+      items: [
+        { cod: '1.1.08', nombre: 'Materias primas',         rubro: 'activo',  pista: 'Materiales para producir: Activo corriente.' },
+        { cod: '1.1.09', nombre: 'Productos en proceso',    rubro: 'activo',  pista: 'Producción comenzada, no terminada: Activo corriente.' },
+        { cod: '1.1.10', nombre: 'Productos terminados',    rubro: 'activo',  pista: 'Bienes listos para vender: Activo corriente.' },
+        { cod: '1.2.04', nombre: 'Maquinaria y equipo',     rubro: 'activo',  pista: 'Bien de uso productivo: Activo no corriente.' },
+        { cod: '5.1.08', nombre: 'Costo de producción',     rubro: 'egreso',  pista: 'Materiales + mano de obra + gastos fab.' },
+        { cod: '2.1.05', nombre: 'Proveedores de MP',       rubro: 'pasivo',  pista: 'Deuda por compra de materias primas.' },
+        { cod: '4.1.05', nombre: 'Ventas de productos',     rubro: 'ingreso', pista: 'Ingresos por ventas de fabricación propia.' },
+        { cod: '1.2.05', nombre: 'Amort. acum. maquinaria', rubro: 'activo',  pista: 'Cuenta regularizadora (resta del activo): va dentro de Activo como valor negativo.' },
+      ],
+    },
+    {
+      titulo: 'Casos difíciles',
+      subtitulo: '⭐⭐⭐ Avanzado — Cuentas que confunden',
+      items: [
+        { cod: '1.1.11', nombre: 'Documentos a cobrar',     rubro: 'activo',  pista: 'Pagaré recibido de un cliente: Activo corriente.' },
+        { cod: '2.1.06', nombre: 'Documentos a pagar',      rubro: 'pasivo',  pista: 'Pagaré firmado a favor de un proveedor: Pasivo corriente.' },
+        { cod: '1.2.06', nombre: 'Llave de negocio',        rubro: 'activo',  pista: 'Bien intangible (activo no corriente intangible).' },
+        { cod: '3.1.04', nombre: 'Resultado del ejercicio', rubro: 'pn',      pista: 'Ganancia/pérdida del período: Patrimonio Neto.' },
+        { cod: '4.1.06', nombre: 'Diferencia de cambio (+)',rubro: 'ingreso', pista: 'Ganancia por tipo de cambio: Ingreso financiero.' },
+        { cod: '5.1.09', nombre: 'Diferencia de cambio (-)',rubro: 'egreso',  pista: 'Pérdida por tipo de cambio: Egreso financiero.' },
+        { cod: '2.2.03', nombre: 'Debentures emitidos',     rubro: 'pasivo',  pista: 'Títulos de deuda emitidos por la empresa: Pasivo no corriente.' },
+        { cod: '1.1.12', nombre: 'IVA Crédito Fiscal',      rubro: 'activo',  pista: 'IVA de compras: Activo (crédito contra AFIP).' },
       ],
     },
   ];
@@ -263,6 +319,6 @@ const PlanCuentas = (() => {
     render();
   }
 
-  return { init, render, switchTab, agregar, selectEj, responder, pista };
+  return { init, render, switchTab, agregar, selectEj, responder, pista, EJERCICIOS };
 
 })();

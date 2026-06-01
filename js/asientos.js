@@ -77,7 +77,7 @@ const Asientos = (() => {
     },
     {
       titulo: 'Pago de sueldo',
-      subtitulo: 'Remuneración mensual',
+      subtitulo: '⭐⭐ Intermedio — Remuneración mensual',
       contexto: 'Sueldo mensual $85.000 brutos. Aportes del trabajador 17% ($14.450). Se paga el neto por banco.',
       pasos: [
         {
@@ -98,6 +98,131 @@ const Asientos = (() => {
           debe:  [{ cuenta: 'Sueldos y jornales', monto: 85000 }],
           haber: [{ cuenta: 'Banco cta. cte.', monto: 70550 }, { cuenta: 'Aportes a depositar', monto: 14450 }],
           explicacion: 'El <strong>gasto</strong> va al Debe. <strong>Banco</strong> y <strong>Aportes</strong> al Haber.',
+        },
+      ],
+    },
+    {
+      titulo: 'Cobro a cliente',
+      subtitulo: '⭐⭐ Intermedio — Cancelación de deuda',
+      contexto: '"El Sauce SRL" tenía un crédito pendiente con el cliente García de $18.150 (incluye IVA). García cancela la mitad en efectivo y el resto con cheque.',
+      pasos: [
+        {
+          titulo: 'Identificá la operación',
+          tipo: 'opcion',
+          consigna: '¿Qué produce este cobro parcial?',
+          opciones: [
+            'Aumenta Caja y disminuye Clientes',
+            'Aumenta Ventas y disminuye Caja',
+            'Aumenta Caja y Banco, disminuye Clientes',
+            'Aumenta Capital y disminuye Deudas',
+          ],
+          correcta: 2,
+          explicacion: 'Cobrar parte en efectivo <strong>aumenta Caja</strong>, cobrar el resto con cheque <strong>aumenta Banco</strong>. Ambas <strong>disminuyen Clientes</strong> (se cancela la deuda).',
+        },
+        {
+          titulo: 'Calculá los importes',
+          tipo: 'calculo',
+          consigna: 'Deuda total $18.150:',
+          campos: [
+            { id: 'total4',   label: 'Deuda total $',     respuesta: 18150 },
+            { id: 'caja4',    label: 'Cobro en caja $',   respuesta: 9075  },
+            { id: 'banco4',   label: 'Cobro en banco $',  respuesta: 9075  },
+          ],
+          explicacion: 'Mitad en efectivo = 18.150 / 2 = <strong>$9.075</strong>. Mitad con cheque = <strong>$9.075</strong>.',
+        },
+        {
+          titulo: 'Registrá el asiento',
+          tipo: 'asiento',
+          consigna: 'Registrá el cobro parcial:',
+          debe:  [{ cuenta: 'Caja', monto: 9075 }, { cuenta: 'Banco cta. cte.', monto: 9075 }],
+          haber: [{ cuenta: 'Clientes', monto: 18150 }],
+          explicacion: '<strong>Caja y Banco</strong> aumentan → Debe. <strong>Clientes</strong> disminuye (cobra) → Haber.',
+        },
+      ],
+    },
+    {
+      titulo: 'Pago a proveedor con descuento',
+      subtitulo: '⭐⭐⭐ Avanzado — Pronto pago',
+      contexto: '"El Sauce SRL" tiene una deuda con Proveedor López de $24.200. Por pagar antes del vencimiento obtiene un descuento de $1.000 (neto). Paga el saldo por banco.',
+      pasos: [
+        {
+          titulo: 'Identificá las cuentas',
+          tipo: 'opcion',
+          consigna: '¿Qué cuentas generá el descuento por pronto pago?',
+          opciones: [
+            'Aumenta Ventas y disminuye Proveedores',
+            'Disminuye Proveedores y aparece Descuento obtenido (ingreso)',
+            'Aumenta Banco y disminuye Capital',
+            'Disminuye Proveedores y aumenta Caja',
+          ],
+          correcta: 1,
+          explicacion: 'El descuento que te hace el proveedor es un <strong>ingreso financiero</strong>. <strong>Proveedores</strong> disminuye por el total y <strong>Descuentos obtenidos</strong> aparece como ingreso.',
+        },
+        {
+          titulo: 'Calculá el neto a pagar',
+          tipo: 'calculo',
+          consigna: 'Deuda $24.200, descuento neto $1.000:',
+          campos: [
+            { id: 'deuda5',    label: 'Deuda total $',       respuesta: 24200 },
+            { id: 'dto5',      label: 'Descuento neto $',    respuesta: 1000  },
+            { id: 'neto5',     label: 'Neto pagado por banco $', respuesta: 23200 },
+          ],
+          explicacion: 'Neto = 24.200 − 1.000 = <strong>$23.200</strong> que sale del banco.',
+        },
+        {
+          titulo: 'Registrá el asiento',
+          tipo: 'asiento',
+          consigna: 'Registrá el pago con descuento:',
+          debe:  [{ cuenta: 'Proveedores', monto: 24200 }],
+          haber: [{ cuenta: 'Banco cta. cte.', monto: 23200 }, { cuenta: 'Descuentos obtenidos', monto: 1000 }],
+          explicacion: '<strong>Proveedores</strong> se cancela → Debe. <strong>Banco</strong> egresa el neto y <strong>Descuentos obtenidos</strong> es el ingreso → ambos al Haber.',
+        },
+      ],
+    },
+    {
+      titulo: 'Venta + costo de ventas',
+      subtitulo: '⭐⭐⭐ Avanzado — Sistema perpetuo',
+      contexto: '"El Sauce SRL" vende mercaderías cuyo costo es $8.000. La venta es de $15.000 neto + IVA 21%, cobrada en cheque. Usá el sistema de inventario perpetuo (registrá venta y CMV simultáneamente).',
+      pasos: [
+        {
+          titulo: 'Identificá la operación',
+          tipo: 'opcion',
+          consigna: 'En el sistema perpetuo, ¿cuántos asientos se generan por una venta?',
+          opciones: [
+            'Uno solo (el cobro)',
+            'Dos: el de la venta/cobro y el del CMV',
+            'Tres: cobro, venta e IVA por separado',
+            'Solo el CMV',
+          ],
+          correcta: 1,
+          explicacion: 'El sistema <strong>perpetuo</strong> registra <strong>dos asientos</strong>: uno por la venta (ingreso) y uno por el CMV (egreso por disminución de mercaderías).',
+        },
+        {
+          titulo: 'Calculá los importes',
+          tipo: 'calculo',
+          consigna: 'Venta $15.000 neto + IVA 21%:',
+          campos: [
+            { id: 'neto6',  label: 'Neto venta $',     respuesta: 15000 },
+            { id: 'iva6',   label: 'IVA 21% $',        respuesta: 3150  },
+            { id: 'total6', label: 'Total cobrado $',   respuesta: 18150 },
+          ],
+          explicacion: 'IVA = 15.000 × 0,21 = <strong>$3.150</strong> / Total = <strong>$18.150</strong>.',
+        },
+        {
+          titulo: 'Registrá el asiento de venta',
+          tipo: 'asiento',
+          consigna: 'Asiento 1/2 — Venta al cliente:',
+          debe:  [{ cuenta: 'Banco cta. cte.', monto: 18150 }],
+          haber: [{ cuenta: 'Ventas', monto: 15000 }, { cuenta: 'IVA Ventas (Déb. Fiscal)', monto: 3150 }],
+          explicacion: '<strong>Banco</strong> aumenta → Debe. <strong>Ventas</strong> e <strong>IVA Ventas</strong> → Haber.',
+        },
+        {
+          titulo: 'Registrá el CMV',
+          tipo: 'asiento',
+          consigna: 'Asiento 2/2 — Costo de Mercaderías Vendidas:',
+          debe:  [{ cuenta: 'Costo mercaderías vendidas', monto: 8000 }],
+          haber: [{ cuenta: 'Mercaderías', monto: 8000 }],
+          explicacion: 'El <strong>Costo mercaderías vendidas (CMV)</strong> aumenta (egreso) → Debe. Disminuye <strong>Mercaderías</strong> (activo) → Haber por $8.000.',
         },
       ],
     },
@@ -435,6 +560,7 @@ const Asientos = (() => {
     registrar, limpiar, limpiarDiario,
     selectEj, responderOpcion, inputCalc, verificarCalc,
     inputAsiento, verificarAsiento, verExpl, siguiente,
+    EJERCICIOS,
   };
 
 })();

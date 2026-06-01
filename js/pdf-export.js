@@ -11,77 +11,60 @@ const PDFExport = (() => {
   function getDatosPlan() {
     const data = Progreso.cargar();
     const modData = data['plan'] || {};
-    const EJERCICIOS = [
-      { titulo: 'Clasificar 8 cuentas', total: 8 },
-      { titulo: 'Asignar códigos',      total: 6 },
-    ];
-    return EJERCICIOS.map((ej, i) => ({
+    const ejs = PlanCuentas.EJERCICIOS || [];
+    return ejs.map((ej, i) => ({
       titulo:     ej.titulo,
       completado: modData[i]?.completado || false,
       fecha:      modData[i]?.fecha || '—',
-      total:      ej.total,
+      total:      ej.items ? ej.items.length : 0,
     }));
   }
 
   function getDatosAsientos() {
     const data = Progreso.cargar();
     const modData = data['asientos'] || {};
-    const EJERCICIOS = [
-      { titulo: 'Venta al contado',  pasos: 3 },
-      { titulo: 'Compra a crédito',  pasos: 3 },
-      { titulo: 'Pago de sueldo',    pasos: 2 },
-    ];
-    return EJERCICIOS.map((ej, i) => ({
+    const ejs = Asientos.EJERCICIOS || [];
+    return ejs.map((ej, i) => ({
       titulo:     ej.titulo,
       completado: modData[i]?.completado || false,
       fecha:      modData[i]?.fecha || '—',
-      pasos:      ej.pasos,
+      pasos:      ej.pasos ? ej.pasos.length : 0,
     }));
   }
 
   function getDatosIVA() {
     const data = Progreso.cargar();
     const modData = data['iva'] || {};
-    const EJERCICIOS = [
-      { titulo: 'Mes de Marzo', ops: 4 },
-      { titulo: 'Mes de Abril', ops: 4 },
-      { titulo: 'Mes de Mayo',  ops: 3 },
-    ];
-    return EJERCICIOS.map((ej, i) => ({
+    const ejs = IVA.EJERCICIOS || [];
+    return ejs.map((ej, i) => ({
       titulo:     ej.titulo,
       completado: modData[i]?.completado || false,
       fecha:      modData[i]?.fecha || '—',
-      ops:        ej.ops,
+      ops:        ej.ops ? ej.ops.length : 0,
     }));
   }
 
   function getDatosConcil() {
     const data = Progreso.cargar();
     const modData = data['concil'] || {};
-    const EJERCICIOS = [
-      { titulo: 'Ejercicio estándar',  partidas: 3 },
-      { titulo: 'Ejercicio avanzado',  partidas: 4 },
-    ];
-    return EJERCICIOS.map((ej, i) => ({
+    const ejs = Conciliacion.EJERCICIOS || [];
+    return ejs.map((ej, i) => ({
       titulo:     ej.titulo,
       completado: modData[i]?.completado || false,
       fecha:      modData[i]?.fecha || '—',
-      partidas:   ej.partidas,
+      partidas:   ej.partidas ? ej.partidas.length : 0,
     }));
   }
 
   function getDatosMayor() {
     const data = Progreso.cargar();
     const modData = data['mayor'] || {};
-    const EJERCICIOS = [
-      { titulo: 'Mayorización de Caja y Banco', cuentas: 2 },
-      { titulo: 'Mayorización de Ventas y Mercaderías', cuentas: 4 },
-    ];
-    return EJERCICIOS.map((ej, i) => ({
+    const ejs = Mayor.EJERCICIOS || [];
+    return ejs.map((ej, i) => ({
       titulo:     ej.titulo,
       completado: modData[i]?.completado || false,
       fecha:      modData[i]?.fecha || '—',
-      cuentas:    ej.cuentas,
+      cuentas:    ej.cuentas ? ej.cuentas.length : 0,
     }));
   }
 

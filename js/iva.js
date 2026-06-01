@@ -10,7 +10,7 @@ const IVA = (() => {
   const EJERCICIOS = [
     {
       titulo: 'Mes de Marzo',
-      subtitulo: 'Ventas y compras mixtas',
+      subtitulo: '⭐ Básico — Ventas y compras mixtas',
       contexto: 'Calculá el IVA de cada operación de marzo y determiná la posición fiscal mensual.',
       ops: [
         { tipo: 'venta',  desc: 'Venta de mercadería a López',      neto: 50000 },
@@ -21,7 +21,7 @@ const IVA = (() => {
     },
     {
       titulo: 'Mes de Abril',
-      subtitulo: 'Posición a pagar',
+      subtitulo: '⭐ Básico — Posición a pagar',
       contexto: 'Calculá el IVA de las operaciones de abril. ¿Habrá saldo a pagar o a favor?',
       ops: [
         { tipo: 'venta',  desc: 'Venta al contado — Cliente A',      neto: 80000 },
@@ -32,12 +32,49 @@ const IVA = (() => {
     },
     {
       titulo: 'Mes de Mayo',
-      subtitulo: 'Saldo a favor',
+      subtitulo: '⭐⭐ Intermedio — Saldo a favor',
       contexto: 'En mayo las compras superan las ventas. Calculá la posición y verificá si queda saldo a favor.',
       ops: [
         { tipo: 'venta',  desc: 'Venta única del mes',               neto: 10000 },
         { tipo: 'compra', desc: 'Compra de maquinaria',              neto: 60000 },
         { tipo: 'compra', desc: 'Compra de mercadería para reventa', neto: 25000 },
+      ],
+    },
+    {
+      titulo: 'Mes de Junio',
+      subtitulo: '⭐⭐ Intermedio — 5 operaciones mixtas',
+      contexto: 'Junio con múltiples operaciones. Calculá el IVA de cada una y determiná si el saldo final es a pagar o a favor.',
+      ops: [
+        { tipo: 'venta',  desc: 'Venta mayorista a Distribuidora Norte', neto: 120000 },
+        { tipo: 'venta',  desc: 'Venta minorista local',                  neto: 35000  },
+        { tipo: 'compra', desc: 'Compra de mercadería principal',         neto: 90000  },
+        { tipo: 'compra', desc: 'Compra de rodados (camioneta)',          neto: 180000 },
+        { tipo: 'compra', desc: 'Gastos de librería y computación',       neto: 12000  },
+      ],
+    },
+    {
+      titulo: 'Mes de Julio',
+      subtitulo: '⭐⭐⭐ Avanzado — Operaciones gravadas y exentas',
+      contexto: 'Julio incluye ventas de libros (EXENTAS de IVA, ingresá 0) y ventas gravadas. Solo las operaciones gravadas generan débito/crédito fiscal.',
+      ops: [
+        { tipo: 'venta',  desc: 'Venta de libros escolares (EXENTA — ingresá 0)', neto: 0      },
+        { tipo: 'venta',  desc: 'Venta de útiles escolares (gravada)',             neto: 45000  },
+        { tipo: 'venta',  desc: 'Venta de ropa deportiva (gravada)',               neto: 28000  },
+        { tipo: 'compra', desc: 'Compra de libros para reventa (EXENTA — ingresá 0)', neto: 0  },
+        { tipo: 'compra', desc: 'Compra de útiles (gravada)',                      neto: 32000  },
+        { tipo: 'compra', desc: 'Compra de equipo de cómputo',                     neto: 55000  },
+      ],
+    },
+    {
+      titulo: 'Mes de Agosto',
+      subtitulo: '⭐⭐⭐ Avanzado — Cuatro operaciones de alto volumen',
+      contexto: 'Agosto es el mes de mayor actividad. Calculá el IVA de cada operación y determiná la posición fiscal final.',
+      ops: [
+        { tipo: 'venta',  desc: 'Exportación de servicio (factura E — gravada)',  neto: 250000 },
+        { tipo: 'venta',  desc: 'Venta local a responsable inscripto',            neto: 75000  },
+        { tipo: 'compra', desc: 'Importación de mercadería (gravada en aduana)',  neto: 130000 },
+        { tipo: 'compra', desc: 'Compra de insumos productivos',                  neto: 48000  },
+        { tipo: 'compra', desc: 'Honorarios profesionales recibidos',             neto: 22000  },
       ],
     },
   ];
@@ -305,6 +342,7 @@ const IVA = (() => {
     init, render, switchTab,
     selectEj, inputVal, verificar, pista,
     preview, registrarLibre, limpiarLibre,
+    EJERCICIOS,
   };
 
 })();

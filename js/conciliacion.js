@@ -9,7 +9,7 @@ const Conciliacion = (() => {
   const EJERCICIOS = [
     {
       titulo: 'Ejercicio estándar',
-      subtitulo: '3 partidas — diferencia simple',
+      subtitulo: '⭐ Básico — 3 partidas, diferencia simple',
       saldoExt: 120000,
       saldoLib: 113500,
       contexto: 'Al 31/03 el extracto bancario muestra $120.000 y el libro de la empresa $113.500. Identificá a qué saldo afecta cada partida.',
@@ -32,8 +32,8 @@ const Conciliacion = (() => {
       ],
     },
     {
-      titulo: 'Ejercicio avanzado',
-      subtitulo: '4 partidas — saldo a confirmar',
+      titulo: 'Ejercicio con 4 partidas',
+      subtitulo: '⭐⭐ Intermedio — Saldo a confirmar',
       saldoExt: 250000,
       saldoLib: 242000,
       contexto: 'Al 30/04 el extracto muestra $250.000 y el libro $242.000. Clasificá las cuatro partidas y verificá si los saldos ajustados coinciden.',
@@ -57,6 +57,103 @@ const Conciliacion = (() => {
           desc: 'Nota de crédito por intereses acreditados — $700',
           afecta: 'lib', val: 700,
           explicacion: 'Acreditación bancaria no registrada en libros. <strong>Suma al libro</strong>.',
+        },
+      ],
+    },
+    {
+      titulo: 'Cierre de mes',
+      subtitulo: '⭐⭐ Intermedio — 5 partidas',
+      saldoExt: 380000,
+      saldoLib: 367300,
+      contexto: 'Al 31/05 el extracto muestra $380.000 y el libro $367.300. Identificá y clasificá las cinco partidas conciliatorias.',
+      partidas: [
+        {
+          desc: 'Cheque n° 0201 emitido el 28/05, aún no cobrado — $8.000',
+          afecta: 'ext', val: -8000,
+          explicacion: 'Cheque emitido pero no presentado al cobro. <strong>Resta del extracto</strong>.',
+        },
+        {
+          desc: 'Depósito en tránsito del 30/05 — $5.500',
+          afecta: 'ext', val: 5500,
+          explicacion: 'Depósito enviado pero no acreditado aún. <strong>Suma al extracto</strong>.',
+        },
+        {
+          desc: 'Débito automático de seguro no registrado — $2.400',
+          afecta: 'lib', val: -2400,
+          explicacion: 'El banco debitó el seguro pero la empresa no lo registró. <strong>Resta del libro</strong>.',
+        },
+        {
+          desc: 'Intereses creditados por plazo fijo — $1.200',
+          afecta: 'lib', val: 1200,
+          explicacion: 'El banco acreditó intereses que la empresa no había registrado. <strong>Suma al libro</strong>.',
+        },
+        {
+          desc: 'Error en libro: cheque registrado por $9.500 en lugar de $6.000 — diferencia $3.500',
+          afecta: 'lib', val: 3500,
+          explicacion: 'El cheque se registró por más de lo correcto. Hay que <strong>sumar la diferencia al libro</strong> para corregir el error.',
+        },
+      ],
+    },
+    {
+      titulo: 'Empresa mediana',
+      subtitulo: '⭐⭐⭐ Avanzado — 5 partidas complejas',
+      saldoExt: 1250000,
+      saldoLib: 1228600,
+      contexto: 'Importadora Sur SA al 30/06. Extracto $1.250.000 vs libro $1.228.600. Varias partidas con montos grandes y mixtos.',
+      partidas: [
+        {
+          desc: 'Cheques emitidos en cartera de proveedores, pendientes de cobro — $32.000',
+          afecta: 'ext', val: -32000,
+          explicacion: 'Cheques entregados a proveedores que aún no se presentaron al banco. <strong>Resta del extracto</strong>.',
+        },
+        {
+          desc: 'Transferencia de cliente en tránsito — $18.000',
+          afecta: 'ext', val: 18000,
+          explicacion: 'Cliente transfirió pero el banco aún no la procesó. <strong>Suma al extracto</strong>.',
+        },
+        {
+          desc: 'Comisión por mantenimiento de cuenta corriente — $800',
+          afecta: 'lib', val: -800,
+          explicacion: 'Cargo bancario mensual no registrado en libros. <strong>Resta del libro</strong>.',
+        },
+        {
+          desc: 'Cobro por débito automático de cliente recurrente — $6.400',
+          afecta: 'lib', val: 6400,
+          explicacion: 'El banco cobró automáticamente un servicio que la empresa no había registrado. <strong>Suma al libro</strong>.',
+        },
+        {
+          desc: 'Rechazo de cheque de cliente por fondos insuficientes — $3.000',
+          afecta: 'lib', val: -3000,
+          explicacion: 'El banco devolvió el cheque rechazado, que la empresa tenía registrado como cobrado. <strong>Resta del libro</strong>.',
+        },
+      ],
+    },
+    {
+      titulo: 'Error contable + partidas',
+      subtitulo: '⭐⭐⭐ Avanzado — Corrección de errores',
+      saldoExt: 540000,
+      saldoLib: 521500,
+      contexto: 'Al 31/07 el extracto muestra $540.000 y el libro $521.500. Hay un error en los libros y cuatro partidas conciliatorias. Identificalas correctamente.',
+      partidas: [
+        {
+          desc: 'Cheque n° 0388 por $15.000 emitido, beneficiario no lo cobró',
+          afecta: 'ext', val: -15000,
+          explicacion: 'Cheque emitido y descontado por el banco, pero el beneficiario aún no cobró. <strong>Resta del extracto</strong>.',
+        },
+        {
+          desc: 'Depósito en tránsito de cobranza — $9.500',
+          afecta: 'ext', val: 9500,
+          explicacion: 'Cobranza depositada que el banco aún no procesó. <strong>Suma al extracto</strong>.',
+        },
+        {
+          desc: 'Nota de débito por impuesto al crédito/débito — $2.200',
+          afecta: 'lib', val: -2200,
+          explicacion: 'Impuesto bancario no registrado en libros. <strong>Resta del libro</strong>.',
+        },
+        {
+          desc: 'Acreditación de reintegro por devolución de compra — $4.700',
+          afecta: 'lib', val: 4700,
+          explicacion: 'El banco acreditó la devolución de una compra. La empresa no registró el ingreso. <strong>Suma al libro</strong>.',
         },
       ],
     },
@@ -335,6 +432,7 @@ const Conciliacion = (() => {
     init, render, switchTab,
     selectEj, seleccionarAfecta, verificarPartida, pista,
     setSaldo, agregarPartida,
+    EJERCICIOS,
   };
 
 })();
