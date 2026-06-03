@@ -233,6 +233,7 @@ const Asientos = (() => {
   let pasoActual = 0;
   let respuestas = [];
   let libroDiario = [];
+  let evaluada   = false;
 
   /* ---- RENDER PRINCIPAL ---- */
   function render() {
@@ -321,8 +322,7 @@ const Asientos = (() => {
   /* ---- EJERCICIOS ---- */
   function renderEjercicio() {
     const ej   = EJERCICIOS[ejActual];
-    const paso = ej.pasos[pasoActual];
-    const rs   = respuestas[pasoActual] || {};
+    const isEval = Progreso.isEvaluacion();
 
     const tarjetas = EJERCICIOS.map((e, i) => {
       const yaCompleto = Progreso.estaCompleto(MODULO, i);
@@ -334,15 +334,66 @@ const Asientos = (() => {
         </div>`;
     }).join('');
 
+    if (isEval && evaluada) {
+      let correctos = 0;
+      ej.pasos.forEach((p, i) => {
+        const r = respuestas[i] || {};
+        let ok = false;
+        if (p.tipo === 'opcion') ok = (r.opcion === p.correcta);
+        if (p.tipo === 'calculo') ok = p.campos.every(c => Utils.numEq(r.vals?.[c.id], c.respuesta));
+        if (p.tipo === 'asiento') {
+          const dOk = p.debe.every((d,idx) => Utils.numEq(r.vals?.['d'+idx], d.monto));
+          const hOk = p.haber.every((h,idx) => Utils.numEq(r.vals?.['h'+idx], h.monto));
+          ok = dOk && hOk;
+        }
+        if (ok) correctos++;
+      });
+      const pct = Math.round((correctos / ej.pasos.length) * 100);
+      const aprobado = pct >= 70;
+      if (aprobado) {
+        Progreso.completar(MODULO, ejActual);
+      }
+
+      const scoreCard = `
+        <div class="score-card ${aprobado ? 'aprobado' : 'desaprobado'}">
+          <div class="score-card-title">Resultado de la Evaluación</div>
+          <div class="score-card-value">${pct}%</div>
+          <div class="score-card-badge">${aprobado ? 'Aprobado ✓' : 'Reprobado ✗'}</div>
+          <div class="score-card-desc">
+            Obtuviste <strong>${correctos}</strong> de <strong>${ej.pasos.length}</strong> pasos correctos.<br>
+            ${aprobado 
+              ? '¡Excelente! Has demostrado un buen dominio. Tu progreso ha sido registrado.' 
+              : 'No alcanzaste el 70% requerido para aprobar. ¡Inténtalo de nuevo!'}
+          </div>
+          <button class="btn btn-primary btn-sm" style="margin-top:14px" onclick="Asientos.selectEj(${ejActual})">
+            <i class="ti ti-rotate" aria-hidden="true"></i> Reintentar
+          </button>
+        </div>`;
+
+      return `
+        <div class="ej-grid">${tarjetas}</div>
+        <div class="card">
+          <div class="alert alert-info" style="margin:0 0 1rem"><i class="ti ti-info-circle" aria-hidden="true"></i><span>${ej.contexto}</span></div>
+          ${scoreCard}
+        </div>`;
+    }
+
+    const paso = ej.pasos[pasoActual];
+    const rs   = respuestas[pasoActual] || {};
     let pasoHtml = '';
 
     if (paso.tipo === 'opcion') {
       pasoHtml = `<div class="option-list">` +
         paso.opciones.map((op, i) => {
           let cls = '';
-          if (rs.opcion === i) cls = rs.ok ? 'correct' : 'wrong';
-          const icono = rs.opcion === i ? (rs.ok ? 'check' : 'x') : 'circle';
-          return `<div class="option-item ${cls}" onclick="Asientos.responderOpcion(${i})">
+          if (rs.opcion === i) {
+             if (isEval) cls = 'selected-neutral';
+             else cls = rs.ok ? 'correct' : 'wrong';
+          }
+          const icono = rs.opcion === i ? (isEval ? 'circle-check' : (rs.ok ? 'check' : 'x')) : 'circle';
+          const extraStyle = (isEval && rs.opcion === i) ? 'border-color:var(--primary); background-color:var(--primary-light); color:var(--primary-dark); font-weight:600;' : '';
+
+          return `<div class="option-item ${cls}" style="${extraStyle}" onclick="Asientos.responderOpcion(${i})">
             <i class="ti ti-${icono}" aria-hidden="true"></i><span>${op}</span></div>`;
         }).join('') + `</div>`;
     }
@@ -352,17 +403,21 @@ const Asientos = (() => {
         paso.campos.map(c => {
           const v = rs.vals?.[c.id] ?? '';
           let cls = '';
-          if (rs.verificado) cls = Utils.numEq(v, c.respuesta) ? 'ok' : 'err';
+          if (!isEval && rs.verificado) cls = Utils.numEq(v, c.respuesta) ? 'ok' : 'err';
           return `<div class="form-group" style="min-width:150px">
             <label>${c.label}</label>
             <input type="number" class="${cls}" value="${v}" placeholder="?"
               onchange="Asientos.inputCalc('${c.id}', this.value)"
               style="padding:7px 10px;border:1px solid var(--border-strong);border-radius:var(--radius-md);font-family:var(--font-sans);font-size:13px;background:var(--bg-surface);color:var(--text-primary)">
           </div>`;
-        }).join('') + `</div>
+        }).join('') + `</div>`;
+        
+      if (!isEval) {
+        pasoHtml += `
         <button class="btn btn-primary btn-sm" onclick="Asientos.verificarCalc()">
           <i class="ti ti-check" aria-hidden="true"></i> Verificar
         </button>`;
+      }
     }
 
     if (paso.tipo === 'asiento') {
@@ -371,40 +426,56 @@ const Asientos = (() => {
         <div class="dh-row">
           <label>${d.cuenta}</label>
           <input type="number" placeholder="Importe" value="${rs.vals?.['d'+i] ?? ''}"
-            style="${inputStyle};${rs.verificado ? (Utils.numEq(rs.vals?.['d'+i], d.monto) ? 'border-color:var(--success)' : 'border-color:var(--danger)') : ''}"
+            style="${inputStyle};${(!isEval && rs.verificado) ? (Utils.numEq(rs.vals?.['d'+i], d.monto) ? 'border-color:var(--success)' : 'border-color:var(--danger)') : ''}"
             onchange="Asientos.inputAsiento('d${i}', this.value)">
         </div>`).join('');
       const haberInputs = paso.haber.map((h, i) => `
         <div class="dh-row">
           <label>${h.cuenta}</label>
           <input type="number" placeholder="Importe" value="${rs.vals?.['h'+i] ?? ''}"
-            style="${inputStyle};${rs.verificado ? (Utils.numEq(rs.vals?.['h'+i], h.monto) ? 'border-color:var(--success)' : 'border-color:var(--danger)') : ''}"
+            style="${inputStyle};${(!isEval && rs.verificado) ? (Utils.numEq(rs.vals?.['h'+i], h.monto) ? 'border-color:var(--success)' : 'border-color:var(--danger)') : ''}"
             onchange="Asientos.inputAsiento('h${i}', this.value)">
         </div>`).join('');
       pasoHtml = `
         <div class="dh-grid">
           <div class="dh-box dh-box-debe"><div class="dh-label-debe">DEBE</div>${debeInputs}</div>
           <div class="dh-box dh-box-haber"><div class="dh-label-haber">HABER</div>${haberInputs}</div>
-        </div>
+        </div>`;
+      if (!isEval) {
+        pasoHtml += `
         <button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="Asientos.verificarAsiento()">
           <i class="ti ti-check" aria-hidden="true"></i> Verificar asiento
         </button>`;
+      }
     }
 
-    const pista = rs.mostradaExpl
-      ? `<div class="alert alert-info" style="margin-top:10px"><i class="ti ti-bulb" aria-hidden="true"></i><span>${paso.explicacion}</span></div>`
-      : (Object.keys(rs).length > 0
-          ? `<button class="btn btn-warning btn-sm" style="margin-top:10px" onclick="Asientos.verExpl()"><i class="ti ti-bulb" aria-hidden="true"></i> Ver explicación</button>`
-          : '');
+    let pista = '';
+    if (!isEval) {
+      pista = rs.mostradaExpl
+        ? `<div class="alert alert-info" style="margin-top:10px"><i class="ti ti-bulb" aria-hidden="true"></i><span>${paso.explicacion}</span></div>`
+        : (Object.keys(rs).length > 0
+            ? `<button class="btn btn-warning btn-sm" style="margin-top:10px" onclick="Asientos.verExpl()"><i class="ti ti-bulb" aria-hidden="true"></i> Ver explicación</button>`
+            : '');
+    }
 
     const esUltimoPaso = pasoActual === ej.pasos.length - 1;
     let siguiente = '';
-    if (rs.ok) {
+    if (isEval) {
       if (!esUltimoPaso) {
-        siguiente = `<button class="btn btn-success btn-sm" style="margin-top:10px;margin-left:6px" onclick="Asientos.siguiente()">
+        siguiente = `<button class="btn btn-primary btn-sm" style="margin-top:10px;margin-left:6px" onclick="Asientos.siguiente()">
           Siguiente <i class="ti ti-arrow-right" aria-hidden="true"></i></button>`;
       } else {
-        siguiente = Utils.alert('ok', 'trophy', '¡Ejercicio completo! Progreso guardado.');
+        siguiente = `<button class="btn btn-primary btn-sm" style="margin-top:10px;margin-left:6px" onclick="Asientos.calificar()">
+          <i class="ti ti-checklist" aria-hidden="true"></i> Finalizar y Calificar</button>`;
+      }
+    } else {
+      if (rs.ok) {
+        if (!esUltimoPaso) {
+          siguiente = `<button class="btn btn-success btn-sm" style="margin-top:10px;margin-left:6px" onclick="Asientos.siguiente()">
+            Siguiente <i class="ti ti-arrow-right" aria-hidden="true"></i></button>`;
+        } else {
+          siguiente = Utils.alert('ok', 'trophy', '¡Ejercicio completo! Progreso guardado.');
+        }
       }
     }
 
@@ -496,18 +567,22 @@ const Asientos = (() => {
   /* ---- ACCIONES EJERCICIO ---- */
   function selectEj(idx) {
     ejActual=idx; pasoActual=0;
+    evaluada = false;
     respuestas=EJERCICIOS[idx].pasos.map(()=>({}));
     renderInner();
   }
 
   function responderOpcion(op) {
-    if(respuestas[pasoActual].ok) return;
+    if (evaluada) return;
+    const isEval = Progreso.isEvaluacion();
+    if(!isEval && respuestas[pasoActual].ok) return;
     const paso=EJERCICIOS[ejActual].pasos[pasoActual];
-    respuestas[pasoActual]={opcion:op, ok:op===paso.correcta, mostradaExpl:op===paso.correcta};
+    respuestas[pasoActual]={opcion:op, ok:op===paso.correcta, mostradaExpl: !isEval && op===paso.correcta};
     renderInner();
   }
 
   function inputCalc(campo,val) {
+    if (evaluada) return;
     respuestas[pasoActual].vals=respuestas[pasoActual].vals||{};
     respuestas[pasoActual].vals[campo]=val;
   }
@@ -522,6 +597,7 @@ const Asientos = (() => {
   }
 
   function inputAsiento(campo,val) {
+    if (evaluada) return;
     respuestas[pasoActual].vals=respuestas[pasoActual].vals||{};
     respuestas[pasoActual].vals[campo]=val;
   }
@@ -550,7 +626,14 @@ const Asientos = (() => {
   function siguiente(){ pasoActual++; renderInner(); }
   function switchTab(tab){ innerTab=tab; render(); }
 
+  function calificar() {
+    evaluada = true;
+    renderInner();
+    App.refrescarProgreso();
+  }
+
   function init() {
+    evaluada = false;
     respuestas=EJERCICIOS[0].pasos.map(()=>({}));
     render();
   }
@@ -559,7 +642,7 @@ const Asientos = (() => {
     init, render, switchTab,
     registrar, limpiar, limpiarDiario,
     selectEj, responderOpcion, inputCalc, verificarCalc,
-    inputAsiento, verificarAsiento, verExpl, siguiente,
+    inputAsiento, verificarAsiento, verExpl, siguiente, calificar,
     EJERCICIOS,
   };
 

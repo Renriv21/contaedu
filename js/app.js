@@ -27,6 +27,9 @@ const App = (() => {
     Conciliacion.init();
     Mayor.init();
 
+    // Sincronizar botones de modo de estudio
+    syncStudyModeButtons(Progreso.getModoEstudio());
+
     // Mostrar progreso guardado en sidebar
     refrescarProgreso();
 
@@ -160,7 +163,36 @@ const App = (() => {
     if (barra) barra.style.width = `${pct}%`;
   }
 
-  return { init, showTab, toggleSidebar, toggleTheme, refrescarProgreso };
+  function switchStudyMode(modo) {
+    const modoActual = Progreso.getModoEstudio();
+    if (modo === modoActual) return;
+
+    Progreso.setModoEstudio(modo);
+    syncStudyModeButtons(modo);
+
+    // Reiniciar módulos para limpiar estado
+    PlanCuentas.init();
+    Asientos.init();
+    IVA.init();
+    Conciliacion.init();
+    Mayor.init();
+
+    refrescarProgreso();
+  }
+
+  function syncStudyModeButtons(modo) {
+    const btnP = document.getElementById('sms-practica');
+    const btnE = document.getElementById('sms-evaluacion');
+    if (modo === 'evaluacion') {
+      btnP?.classList.remove('active');
+      btnE?.classList.add('active');
+    } else {
+      btnE?.classList.remove('active');
+      btnP?.classList.add('active');
+    }
+  }
+
+  return { init, showTab, toggleSidebar, toggleTheme, refrescarProgreso, switchStudyMode };
 
 })();
 

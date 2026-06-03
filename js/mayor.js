@@ -116,6 +116,7 @@ const Mayor = (() => {
   let ejActual  = 0;
   let pasoActual = 0;   // 0: Mayorizar | 1: Saldos | 2: Balance
   let respuestas = {};
+  let evaluada = false;
 
   /* -------------------------------------------------- */
   /*  RENDER PRINCIPAL                                   */
@@ -177,9 +178,9 @@ const Mayor = (() => {
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:14px;">
           ${cuentasHtml}
         </div>
-        <button class="btn btn-primary btn-sm" onclick="Mayor.verificarPaso1()">
-          <i class="ti ti-check" aria-hidden="true"></i> Verificar Movimientos
-        </button>`;
+        ${(Progreso.isEvaluacion() && !evaluada) 
+          ? `<button class="btn btn-primary btn-sm" onclick="Mayor.siguiente(1)">Siguiente <i class="ti ti-arrow-right"></i></button>` 
+          : (!Progreso.isEvaluacion() ? `<button class="btn btn-primary btn-sm" onclick="Mayor.verificarPaso1()"><i class="ti ti-check" aria-hidden="true"></i> Verificar Movimientos</button>` : '')}`;
 
     /* ---- PASO 2: Sumas y Saldos ---- */
     } else if (pasoActual === 1) {
@@ -239,9 +240,9 @@ const Mayor = (() => {
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:14px;">
           ${cuentasHtml}
         </div>
-        <button class="btn btn-primary btn-sm" onclick="Mayor.verificarPaso2()">
-          <i class="ti ti-check" aria-hidden="true"></i> Verificar Saldos
-        </button>`;
+        ${(Progreso.isEvaluacion() && !evaluada)
+          ? `<button class="btn btn-primary btn-sm" onclick="Mayor.siguiente(2)">Siguiente <i class="ti ti-arrow-right"></i></button>`
+          : (!Progreso.isEvaluacion() ? `<button class="btn btn-primary btn-sm" onclick="Mayor.verificarPaso2()"><i class="ti ti-check" aria-hidden="true"></i> Verificar Saldos</button>` : '')}`;
 
     /* ---- PASO 3: Balance de Comprobación ---- */
     } else if (pasoActual === 2) {
@@ -323,39 +324,71 @@ const Mayor = (() => {
             </tbody>
           </table>
         </div>
-        <button class="btn btn-primary btn-sm" style="margin-top:12px" onclick="Mayor.verificarPaso3()">
-          <i class="ti ti-check" aria-hidden="true"></i> Verificar Balance
-        </button>`;
+        ${(Progreso.isEvaluacion() && !evaluada)
+          ? `<button class="btn btn-primary btn-sm" style="margin-top:12px" onclick="Mayor.calificar()"><i class="ti ti-checklist" aria-hidden="true"></i> Finalizar y Calificar</button>`
+          : (!Progreso.isEvaluacion() ? `<button class="btn btn-primary btn-sm" style="margin-top:12px" onclick="Mayor.verificarPaso3()"><i class="ti ti-check" aria-hidden="true"></i> Verificar Balance</button>` : '')}`;
     }
 
     /* --- mensajes de feedback --- */
     let msg = '';
-    if (rs.verificadoP1 && !rs.okP1 && pasoActual === 0) {
-      msg = Utils.alert('err', 'alert-circle', 'Hay errores en los movimientos. Revisá que todos los importes estén en la columna correcta y no falte ninguno.');
-    }
-    if (rs.verificadoP2 && !rs.okP2 && pasoActual === 1) {
-      msg = Utils.alert('err', 'alert-circle', 'Hay errores en las sumas o en la determinación del saldo. Revisá tus cálculos.');
-    }
-    if (rs.verificadoP3 && !rs.okP3 && pasoActual === 2) {
-      msg = Utils.alert('err', 'alert-circle', 'Revisá la tabla. Sumas Debe = Sumas Haber, y Saldos Deudores = Saldos Acreedores.');
+    const isEval = Progreso.isEvaluacion();
+    if (!isEval || evaluada) {
+      if (rs.verificadoP1 && !rs.okP1 && pasoActual === 0) {
+        msg = Utils.alert('err', 'alert-circle', 'Hay errores en los movimientos. Revisá que todos los importes estén en la columna correcta y no falte ninguno.');
+      }
+      if (rs.verificadoP2 && !rs.okP2 && pasoActual === 1) {
+        msg = Utils.alert('err', 'alert-circle', 'Hay errores en las sumas o en la determinación del saldo. Revisá tus cálculos.');
+      }
+      if (rs.verificadoP3 && !rs.okP3 && pasoActual === 2) {
+        msg = Utils.alert('err', 'alert-circle', 'Revisá la tabla. Sumas Debe = Sumas Haber, y Saldos Deudores = Saldos Acreedores.');
+      }
     }
 
     /* --- botón de siguiente paso --- */
     let siguiente = '';
-    if (pasoActual === 0 && rs.okP1) {
+    if (!isEval) {
+      if (pasoActual === 0 && rs.okP1) {
+        siguiente = `
+          <div style="margin-top:12px;display:flex;align-items:center;gap:10px">
+            ${Utils.alert('ok', 'check', '¡Movimientos correctos!')}
+            <button class="btn btn-success btn-sm" onclick="Mayor.siguiente(1)">Calcular Saldos <i class="ti ti-arrow-right"></i></button>
+          </div>`;
+      } else if (pasoActual === 1 && rs.okP2) {
+        siguiente = `
+          <div style="margin-top:12px;display:flex;align-items:center;gap:10px">
+            ${Utils.alert('ok', 'check', '¡Saldos correctos!')}
+            <button class="btn btn-success btn-sm" onclick="Mayor.siguiente(2)">Armar Balance <i class="ti ti-arrow-right"></i></button>
+          </div>`;
+      } else if (pasoActual === 2 && rs.okP3) {
+        siguiente = `<div style="margin-top:12px">${Utils.alert('ok', 'trophy', '¡Balance perfecto! Ejercicio completado y progreso guardado.')}</div>`;
+      }
+    } else if (isEval && evaluada && pasoActual === 2) {
+      let pct = 0;
+      if (rs.okP1) pct += 33.3;
+      if (rs.okP2) pct += 33.3;
+      if (rs.okP3) pct += 33.4;
+      pct = Math.round(pct);
+      const aprobado = pct >= 70;
+      
+      if (aprobado) {
+        Progreso.completar(MODULO, ejActual);
+        App.refrescarProgreso();
+      }
+
       siguiente = `
-        <div style="margin-top:12px;display:flex;align-items:center;gap:10px">
-          ${Utils.alert('ok', 'check', '¡Movimientos correctos!')}
-          <button class="btn btn-success btn-sm" onclick="Mayor.siguiente(1)">Calcular Saldos <i class="ti ti-arrow-right"></i></button>
+        <div class="score-card ${aprobado ? 'aprobado' : 'desaprobado'}" style="margin-top:1rem">
+          <div class="score-card-title">Resultado de la Evaluación</div>
+          <div class="score-card-value">${pct}%</div>
+          <div class="score-card-badge">${aprobado ? 'Aprobado ✓' : 'Reprobado ✗'}</div>
+          <div class="score-card-desc">
+            ${aprobado 
+              ? '¡Excelente! Has demostrado un buen dominio. Tu progreso ha sido registrado.' 
+              : 'No alcanzaste el 70% requerido para aprobar. ¡Inténtalo de nuevo!'}
+          </div>
+          <button class="btn btn-primary btn-sm" style="margin-top:14px" onclick="Mayor.selectEj(${ejActual})">
+            <i class="ti ti-rotate" aria-hidden="true"></i> Reintentar
+          </button>
         </div>`;
-    } else if (pasoActual === 1 && rs.okP2) {
-      siguiente = `
-        <div style="margin-top:12px;display:flex;align-items:center;gap:10px">
-          ${Utils.alert('ok', 'check', '¡Saldos correctos!')}
-          <button class="btn btn-success btn-sm" onclick="Mayor.siguiente(2)">Armar Balance <i class="ti ti-arrow-right"></i></button>
-        </div>`;
-    } else if (pasoActual === 2 && rs.okP3) {
-      siguiente = `<div style="margin-top:12px">${Utils.alert('ok', 'trophy', '¡Balance perfecto! Ejercicio completado y progreso guardado.')}</div>`;
     }
 
     const titulos = [
@@ -394,11 +427,13 @@ const Mayor = (() => {
   function selectEj(idx) {
     ejActual   = idx;
     pasoActual = 0;
+    evaluada = false;
     respuestas = { vals: {}, errCol: [] };
     render();
   }
 
   function inputVal(campo, val) {
+    if (evaluada) return;
     if (!respuestas.vals) respuestas.vals = {};
     respuestas.vals[campo] = val;
   }
@@ -433,7 +468,7 @@ const Mayor = (() => {
     });
 
     respuestas.okP1 = todoOk;
-    render();
+    if (!arguments[0]) render();
   }
 
   function verificarPaso2() {
@@ -454,7 +489,7 @@ const Mayor = (() => {
     });
 
     respuestas.okP2 = todoOk;
-    render();
+    if (!arguments[0]) render();
   }
 
   function verificarPaso3() {
@@ -496,10 +531,18 @@ const Mayor = (() => {
     }
 
     respuestas.okP3 = todoOk;
-    if (todoOk) {
+    if (todoOk && !Progreso.isEvaluacion()) {
       Progreso.completar(MODULO, ejActual);
       App.refrescarProgreso();
     }
+    if (!arguments[0]) render();
+  }
+
+  function calificar() {
+    evaluada = true;
+    verificarPaso1(true);
+    verificarPaso2(true);
+    verificarPaso3(true);
     render();
   }
 
@@ -509,10 +552,11 @@ const Mayor = (() => {
   }
 
   function init() {
+    evaluada = false;
     respuestas = { vals: {}, errCol: [] };
     render();
   }
 
-  return { init, selectEj, inputVal, verificarPaso1, verificarPaso2, verificarPaso3, siguiente, EJERCICIOS };
+  return { init, selectEj, inputVal, verificarPaso1, verificarPaso2, verificarPaso3, calificar, siguiente, EJERCICIOS };
 
 })();

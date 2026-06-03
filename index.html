@@ -22,6 +22,16 @@
       <i class="ti ti-calculator" aria-hidden="true"></i>
       <span>ContaEdu</span>
     </div>
+    
+    <!-- MODO DE ESTUDIO TOGGLE -->
+    <div class="sidebar-mode-selector">
+      <button class="sms-btn active" id="sms-practica" onclick="App.switchStudyMode('practica')">
+        <i class="ti ti-book-open" aria-hidden="true"></i> Práctica
+      </button>
+      <button class="sms-btn" id="sms-evaluacion" onclick="App.switchStudyMode('evaluacion')">
+        <i class="ti ti-checklist" aria-hidden="true"></i> Evaluación
+      </button>
+    </div>
 
     <nav class="sidebar-nav" aria-label="Módulos">
       <button class="nav-item active" data-tab="plan" onclick="App.showTab('plan', this)">

@@ -162,6 +162,7 @@ const Conciliacion = (() => {
   let innerTab = 'ejercicio';
   let ejActual = 0;
   let ejState  = [];
+  let evaluada = false;
 
   let libreExt = 0, libreLib = 0;
   let librePartidas = [];
@@ -195,23 +196,26 @@ const Conciliacion = (() => {
   /* ---- EJERCICIOS ---- */
   function renderEjercicio() {
     const ej = EJERCICIOS[ejActual];
+    const isEval = Progreso.isEvaluacion();
+    
     let ajExt = 0, ajLib = 0;
+    let correctos = 0;
+
     ej.partidas.forEach((p, i) => {
-      if (ejState[i]?.ok) {
+      const s = ejState[i] || {};
+      const isOk = s.val === p.afecta;
+      if (isOk) correctos++;
+      
+      if ((isEval && isOk) || (!isEval && s.ok)) {
         if (p.afecta === 'ext') ajExt += p.val;
         else                    ajLib += p.val;
       }
     });
+
     const sExtAj = ej.saldoExt + ajExt;
     const sLibAj = ej.saldoLib + ajLib;
     const dif    = Math.abs(sExtAj - sLibAj);
-    const completados = ejState.filter(s => s?.ok).length;
-
-    /* Guardar progreso si todos completos y saldos coinciden */
-    if (completados === ej.partidas.length && dif < 1) {
-      Progreso.completar(MODULO, ejActual);
-      App.refrescarProgreso();
-    }
+    const completados = isEval ? ej.partidas.length : ejState.filter(s => s?.ok).length;
 
     const tarjetas = EJERCICIOS.map((e, i) => {
       const yaCompleto = Progreso.estaCompleto(MODULO, i);
@@ -227,16 +231,26 @@ const Conciliacion = (() => {
       const s = ejState[i] || {};
       const signo = p.val >= 0 ? '+' : '';
       const valColor = p.val >= 0 ? 'var(--success)' : 'var(--danger)';
+      const isOk = s.val === p.afecta;
+      
       let estadoHtml = '';
-      if (s.ok) estadoHtml = `<span style="color:var(--success);font-size:12px"><i class="ti ti-check" aria-hidden="true"></i> Correcto</span>`;
-      else if (s.val && !s.ok) estadoHtml = `<span style="color:var(--danger);font-size:12px"><i class="ti ti-x" aria-hidden="true"></i> Revisá</span>`;
+      if (!isEval) {
+        if (s.ok) estadoHtml = `<span style="color:var(--success);font-size:12px"><i class="ti ti-check" aria-hidden="true"></i> Correcto</span>`;
+        else if (s.val && !s.ok) estadoHtml = `<span style="color:var(--danger);font-size:12px"><i class="ti ti-x" aria-hidden="true"></i> Revisá</span>`;
+      } else if (evaluada) {
+        if (isOk) estadoHtml = `<span style="color:var(--success);font-size:12px"><i class="ti ti-check" aria-hidden="true"></i> Correcto</span>`;
+        else estadoHtml = `<span style="color:var(--danger);font-size:12px"><i class="ti ti-x" aria-hidden="true"></i> Incorrecto</span>`;
+      }
 
-      const pistaHtml = s.mostradaPista
-        ? `<div class="alert alert-warning" style="margin-top:6px;font-size:12px"><i class="ti ti-bulb" aria-hidden="true"></i><span>${p.explicacion}</span></div>`
-        : `<button class="btn btn-warning btn-sm" onclick="Conciliacion.pista(${i})"><i class="ti ti-bulb" aria-hidden="true"></i> Pista</button>`;
+      let pistaHtml = '';
+      if (!isEval) {
+        pistaHtml = s.mostradaPista
+          ? `<div class="alert alert-warning" style="margin-top:6px;font-size:12px"><i class="ti ti-bulb" aria-hidden="true"></i><span>${p.explicacion}</span></div>`
+          : `<button class="btn btn-warning btn-sm" onclick="Conciliacion.pista(${i})"><i class="ti ti-bulb" aria-hidden="true"></i> Pista</button>`;
+      }
 
       return `
-        <div class="check-row ${s.ok ? 'resolved' : ''}">
+        <div class="check-row ${(!isEval && s.ok) || (isEval && evaluada && isOk) ? 'resolved' : ''}">
           <div style="flex:1">
             <div style="font-size:13px;margin-bottom:8px">
               ${p.desc}
@@ -244,35 +258,81 @@ const Conciliacion = (() => {
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
               <select style="font-size:12px;padding:4px 8px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--bg-surface);color:var(--text-primary)"
-                onchange="Conciliacion.seleccionarAfecta(${i}, this.value)">
+                onchange="Conciliacion.seleccionarAfecta(${i}, this.value)" ${evaluada ? 'disabled' : ''}>
                 <option value="">¿Afecta...?</option>
                 <option value="ext" ${s.val==='ext'?'selected':''}>Extracto bancario</option>
                 <option value="lib" ${s.val==='lib'?'selected':''}>Libro empresa</option>
               </select>
-              <button class="btn btn-sm" onclick="Conciliacion.verificarPartida(${i})">Verificar</button>
-              ${!s.ok ? pistaHtml : ''}
+              ${!isEval ? `<button class="btn btn-sm" onclick="Conciliacion.verificarPartida(${i})">Verificar</button>` : ''}
+              ${(!isEval && !s.ok) ? pistaHtml : ''}
               ${estadoHtml}
             </div>
-            ${s.ok && s.mostradaPista ? `<div class="alert alert-info" style="margin-top:6px;font-size:12px"><i class="ti ti-bulb" aria-hidden="true"></i><span>${p.explicacion}</span></div>` : ''}
+            ${(!isEval && s.ok && s.mostradaPista) ? `<div class="alert alert-info" style="margin-top:6px;font-size:12px"><i class="ti ti-bulb" aria-hidden="true"></i><span>${p.explicacion}</span></div>` : ''}
           </div>
         </div>`;
     }).join('');
 
     let resumenHtml = '';
-    if (completados > 0) {
-      resumenHtml = `
-        <hr class="divider">
-        <div class="stat-grid">
-          <div class="stat-card"><div class="stat-label">Extracto ajustado</div><div class="stat-value">${Utils.formatARS(sExtAj)}</div></div>
-          <div class="stat-card"><div class="stat-label">Libro ajustado</div><div class="stat-value">${Utils.formatARS(sLibAj)}</div></div>
-          <div class="stat-card"><div class="stat-label">Diferencia</div>
-            <div class="stat-value" style="color:${dif<1?'var(--success)':'var(--danger)'}">${dif<1?'Conciliado':Utils.formatARS(dif)}</div>
-          </div>
-        </div>`;
-      if (completados === ej.partidas.length) {
-        resumenHtml += dif < 1
-          ? Utils.alert('ok', 'trophy', `¡Conciliación correcta! Saldos ajustados = ${Utils.formatARS(sExtAj)}. Progreso guardado.`)
-          : Utils.alert('err', 'alert-circle', `Diferencia de ${Utils.formatARS(dif)}. Revisá la clasificación.`);
+    let finalMsg = '';
+
+    if (!isEval) {
+      if (completados > 0) {
+        resumenHtml = `
+          <hr class="divider">
+          <div class="stat-grid">
+            <div class="stat-card"><div class="stat-label">Extracto ajustado</div><div class="stat-value">${Utils.formatARS(sExtAj)}</div></div>
+            <div class="stat-card"><div class="stat-label">Libro ajustado</div><div class="stat-value">${Utils.formatARS(sLibAj)}</div></div>
+            <div class="stat-card"><div class="stat-label">Diferencia</div>
+              <div class="stat-value" style="color:${dif<1?'var(--success)':'var(--danger)'}">${dif<1?'Conciliado':Utils.formatARS(dif)}</div>
+            </div>
+          </div>`;
+        if (completados === ej.partidas.length) {
+          if (dif < 1) {
+            Progreso.completar(MODULO, ejActual);
+            App.refrescarProgreso();
+            resumenHtml += Utils.alert('ok', 'trophy', `¡Conciliación correcta! Saldos ajustados = ${Utils.formatARS(sExtAj)}. Progreso guardado.`);
+          } else {
+            resumenHtml += Utils.alert('err', 'alert-circle', `Diferencia de ${Utils.formatARS(dif)}. Revisá la clasificación.`);
+          }
+        }
+      }
+    } else {
+      if (evaluada) {
+        resumenHtml = `
+          <hr class="divider">
+          <div class="stat-grid">
+            <div class="stat-card"><div class="stat-label">Extracto ajustado</div><div class="stat-value">${Utils.formatARS(sExtAj)}</div></div>
+            <div class="stat-card"><div class="stat-label">Libro ajustado</div><div class="stat-value">${Utils.formatARS(sLibAj)}</div></div>
+            <div class="stat-card"><div class="stat-label">Diferencia</div>
+              <div class="stat-value" style="color:${dif<1?'var(--success)':'var(--danger)'}">${dif<1?'Conciliado':Utils.formatARS(dif)}</div>
+            </div>
+          </div>`;
+        const pct = Math.round((correctos / ej.partidas.length) * 100);
+        const aprobado = pct >= 70 && dif < 1;
+        if (aprobado) {
+          Progreso.completar(MODULO, ejActual);
+          App.refrescarProgreso();
+        }
+        finalMsg = `
+          <div class="score-card ${aprobado ? 'aprobado' : 'desaprobado'}" style="margin-top:1rem">
+            <div class="score-card-title">Resultado de la Evaluación</div>
+            <div class="score-card-value">${pct}%</div>
+            <div class="score-card-badge">${aprobado ? 'Aprobado ✓' : 'Reprobado ✗'}</div>
+            <div class="score-card-desc">
+              Respondiste correctamente <strong>${correctos}</strong> de <strong>${ej.partidas.length}</strong> partidas.<br>
+              ${aprobado 
+                ? '¡Excelente! Conciliación perfecta. Tu progreso ha sido registrado.' 
+                : 'No alcanzaste el 70% requerido o hay diferencias de saldo. ¡Inténtalo de nuevo!'}
+            </div>
+            <button class="btn btn-primary btn-sm" style="margin-top:14px" onclick="Conciliacion.selectEj(${ejActual})">
+              <i class="ti ti-rotate" aria-hidden="true"></i> Reintentar
+            </button>
+          </div>`;
+      } else {
+        finalMsg = `
+          <button class="btn btn-primary" style="margin-top:14px" onclick="Conciliacion.calificar()">
+            <i class="ti ti-checklist" aria-hidden="true"></i> Finalizar y Calificar
+          </button>`;
       }
     }
 
@@ -292,6 +352,7 @@ const Conciliacion = (() => {
         <div class="card-title">Partidas conciliatorias</div>
         ${partidas}
         ${resumenHtml}
+        ${finalMsg}
       </div>`;
   }
 
@@ -378,16 +439,19 @@ const Conciliacion = (() => {
   /* ---- ACCIONES ---- */
   function selectEj(idx) {
     ejActual = idx;
+    evaluada = false;
     ejState  = EJERCICIOS[idx].partidas.map(() => ({}));
     renderInner();
   }
 
   function seleccionarAfecta(i, val) {
+    if (evaluada) return;
     ejState[i] = ejState[i] || {};
     ejState[i].val = val;
   }
 
   function verificarPartida(i) {
+    if (Progreso.isEvaluacion()) return;
     const s = ejState[i] || {};
     s.ok = s.val === EJERCICIOS[ejActual].partidas[i].afecta;
     if (s.ok) s.mostradaPista = true;
@@ -396,8 +460,14 @@ const Conciliacion = (() => {
   }
 
   function pista(i) {
+    if (Progreso.isEvaluacion()) return;
     ejState[i] = ejState[i] || {};
     ejState[i].mostradaPista = true;
+    renderInner();
+  }
+
+  function calificar() {
+    evaluada = true;
     renderInner();
   }
 
@@ -424,13 +494,14 @@ const Conciliacion = (() => {
   function switchTab(tab) { innerTab = tab; render(); }
 
   function init() {
+    evaluada = false;
     ejState = EJERCICIOS[0].partidas.map(() => ({}));
     render();
   }
 
   return {
     init, render, switchTab,
-    selectEj, seleccionarAfecta, verificarPartida, pista,
+    selectEj, seleccionarAfecta, verificarPartida, pista, calificar,
     setSaldo, agregarPartida,
     EJERCICIOS,
   };

@@ -83,6 +83,7 @@ const IVA = (() => {
   let ejActual = 0;
   let ejState  = [];
   let movimientos = [];
+  let evaluada = false;
 
   /* ---- RENDER PRINCIPAL ---- */
   function render() {
@@ -114,6 +115,7 @@ const IVA = (() => {
   function renderEjercicio() {
     const ej    = EJERCICIOS[ejActual];
     const state = ejState;
+    const isEval = Progreso.isEvaluacion();
 
     const tarjetas = EJERCICIOS.map((e, i) => {
       const yaCompleto = Progreso.estaCompleto(MODULO, i);
@@ -125,34 +127,49 @@ const IVA = (() => {
         </div>`;
     }).join('');
 
+    let correctos = 0;
     let debF = 0, crF = 0;
+
     ej.ops.forEach((op, i) => {
-      if (state[i]?.ok) {
-        if (op.tipo === 'venta') debF += op.neto * TASA;
-        else                     crF  += op.neto * TASA;
+      const s = state[i] || {};
+      const correcto = op.neto * TASA;
+      const isOk = Utils.numEq(s.val, correcto, 1);
+      
+      if (isOk) correctos++;
+      
+      if ((isEval && isOk) || (!isEval && s.ok)) {
+        if (op.tipo === 'venta') debF += correcto;
+        else                     crF  += correcto;
       }
     });
-    const saldo = debF - crF;
-    const completados = state.filter(s => s?.ok).length;
 
-    /* Guardar progreso si todos completos */
-    if (completados === ej.ops.length) {
-      Progreso.completar(MODULO, ejActual);
-      App.refrescarProgreso();
-    }
+    const saldo = debF - crF;
+    const completados = isEval ? ej.ops.length : state.filter(s => s?.ok).length;
 
     const filas = ej.ops.map((op, i) => {
       const s = state[i] || {};
       const correcto = op.neto * TASA;
-      let estadoHtml = '';
-      if (s.ok)
-        estadoHtml = `<span style="color:var(--success);font-size:12px"><i class="ti ti-check" aria-hidden="true"></i> ${Utils.formatARS(correcto)}</span>`;
-      else if (s.verificado)
-        estadoHtml = `<span style="color:var(--danger);font-size:12px"><i class="ti ti-x" aria-hidden="true"></i> Revisá</span>`;
+      const isOk = Utils.numEq(s.val, correcto, 1);
 
-      const pistaHtml = s.mostradaPista
-        ? `<div class="alert alert-warning" style="margin-top:4px;font-size:12px"><i class="ti ti-bulb" aria-hidden="true"></i> ${Utils.formatARS(op.neto)} × 0,21 = ${Utils.formatARS(correcto)}</div>`
-        : `<button class="btn btn-warning btn-sm" onclick="IVA.pista(${i})"><i class="ti ti-bulb" aria-hidden="true"></i> Pista</button>`;
+      let estadoHtml = '';
+      if (!isEval) {
+        if (s.ok)
+          estadoHtml = `<span style="color:var(--success);font-size:12px"><i class="ti ti-check" aria-hidden="true"></i> ${Utils.formatARS(correcto)}</span>`;
+        else if (s.verificado)
+          estadoHtml = `<span style="color:var(--danger);font-size:12px"><i class="ti ti-x" aria-hidden="true"></i> Revisá</span>`;
+      } else if (evaluada) {
+        if (isOk)
+          estadoHtml = `<span style="color:var(--success);font-size:12px"><i class="ti ti-check" aria-hidden="true"></i> Correcto</span>`;
+        else
+          estadoHtml = `<span style="color:var(--danger);font-size:12px"><i class="ti ti-x" aria-hidden="true"></i> Incorrecto</span>`;
+      }
+
+      let pistaHtml = '';
+      if (!isEval) {
+        pistaHtml = s.mostradaPista
+          ? `<div class="alert alert-warning" style="margin-top:4px;font-size:12px"><i class="ti ti-bulb" aria-hidden="true"></i> ${Utils.formatARS(op.neto)} × 0,21 = ${Utils.formatARS(correcto)}</div>`
+          : `<button class="btn btn-warning btn-sm" onclick="IVA.pista(${i})"><i class="ti ti-bulb" aria-hidden="true"></i> Pista</button>`;
+      }
 
       return `
         <tr>
@@ -163,11 +180,11 @@ const IVA = (() => {
           <td class="td-num">${Utils.formatARS(op.neto)}</td>
           <td>
             <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-              <input type="number" placeholder="?" value="${s.val ?? ''}"
+              <input type="number" placeholder="?" value="${s.val ?? ''}" ${evaluada ? 'disabled' : ''}
                 style="width:100px;padding:5px 8px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);font-size:12px;background:var(--bg-surface);color:var(--text-primary)"
                 onchange="IVA.inputVal(${i}, this.value)">
-              <button class="btn btn-sm" onclick="IVA.verificar(${i})">Verificar</button>
-              ${!s.ok && !s.mostradaPista ? pistaHtml : ''}
+              ${!isEval ? `<button class="btn btn-sm" onclick="IVA.verificar(${i})">Verificar</button>` : ''}
+              ${(!isEval && !s.ok && !s.mostradaPista) ? pistaHtml : ''}
             </div>
           </td>
           <td>${estadoHtml}</td>
@@ -175,7 +192,7 @@ const IVA = (() => {
     }).join('');
 
     let posicionHtml = '';
-    if (completados > 0) {
+    if ((!isEval && completados === ej.ops.length) || (isEval && evaluada)) {
       const saldoColor = saldo > 0 ? 'var(--danger)' : 'var(--success)';
       const saldoLabel = saldo > 0 ? 'A pagar' : 'Saldo a favor';
       posicionHtml = `
@@ -187,9 +204,43 @@ const IVA = (() => {
         </div>`;
     }
 
-    const finalMsg = completados === ej.ops.length
-      ? Utils.alert('ok', 'trophy', '¡Posición fiscal completa! Progreso guardado.')
-      : '';
+    let finalMsg = '';
+    if (!isEval) {
+      if (completados === ej.ops.length) {
+        Progreso.completar(MODULO, ejActual);
+        App.refrescarProgreso();
+        finalMsg = Utils.alert('ok', 'trophy', '¡Posición fiscal completa! Progreso guardado.');
+      }
+    } else {
+      if (evaluada) {
+        const pct = Math.round((correctos / ej.ops.length) * 100);
+        const aprobado = pct >= 70;
+        if (aprobado) {
+          Progreso.completar(MODULO, ejActual);
+          App.refrescarProgreso();
+        }
+        finalMsg = `
+          <div class="score-card ${aprobado ? 'aprobado' : 'desaprobado'}">
+            <div class="score-card-title">Resultado de la Evaluación</div>
+            <div class="score-card-value">${pct}%</div>
+            <div class="score-card-badge">${aprobado ? 'Aprobado ✓' : 'Reprobado ✗'}</div>
+            <div class="score-card-desc">
+              Respondiste correctamente <strong>${correctos}</strong> de <strong>${ej.ops.length}</strong> operaciones.<br>
+              ${aprobado 
+                ? '¡Excelente! Has demostrado un buen dominio. Tu progreso ha sido registrado.' 
+                : 'No alcanzaste el 70% requerido para aprobar. ¡Inténtalo de nuevo!'}
+            </div>
+            <button class="btn btn-primary btn-sm" style="margin-top:14px" onclick="IVA.selectEj(${ejActual})">
+              <i class="ti ti-rotate" aria-hidden="true"></i> Reintentar
+            </button>
+          </div>`;
+      } else {
+        finalMsg = `
+          <button class="btn btn-primary" style="margin-top:14px" onclick="IVA.calificar()">
+            <i class="ti ti-checklist" aria-hidden="true"></i> Finalizar y Calificar
+          </button>`;
+      }
+    }
 
     return `
       <div class="teoria">
@@ -278,16 +329,19 @@ const IVA = (() => {
   /* ---- ACCIONES ---- */
   function selectEj(idx) {
     ejActual = idx;
+    evaluada = false;
     ejState  = EJERCICIOS[idx].ops.map(() => ({}));
     renderInner();
   }
 
   function inputVal(i, val) {
+    if (evaluada) return;
     ejState[i] = ejState[i] || {};
     ejState[i].val = val;
   }
 
   function verificar(i) {
+    if (Progreso.isEvaluacion()) return;
     const op = EJERCICIOS[ejActual].ops[i];
     const s  = ejState[i] || {};
     s.verificado = true;
@@ -297,8 +351,14 @@ const IVA = (() => {
   }
 
   function pista(i) {
+    if (Progreso.isEvaluacion()) return;
     ejState[i] = ejState[i] || {};
     ejState[i].mostradaPista = true;
+    renderInner();
+  }
+
+  function calificar() {
+    evaluada = true;
     renderInner();
   }
 
@@ -334,13 +394,14 @@ const IVA = (() => {
   function switchTab(tab) { innerTab = tab; render(); }
 
   function init() {
+    evaluada = false;
     ejState = EJERCICIOS[0].ops.map(() => ({}));
     render();
   }
 
   return {
     init, render, switchTab,
-    selectEj, inputVal, verificar, pista,
+    selectEj, inputVal, verificar, pista, calificar,
     preview, registrarLibre, limpiarLibre,
     EJERCICIOS,
   };

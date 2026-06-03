@@ -115,6 +115,7 @@ const PlanCuentas = (() => {
   let innerTab  = 'plan';
   let ejActual  = 0;
   let ejState   = [];
+  let evaluada  = false;
 
   /* ---- RENDER PRINCIPAL ---- */
   function render() {
@@ -155,28 +156,23 @@ const PlanCuentas = (() => {
         <td>${Utils.badgeRubro(c.rubro)}</td>
       </tr>`).join('');
     return `
-      <div class="teoria">
-        <strong>Plan de Cuentas:</strong> Lista ordenada de cuentas clasificadas por <strong>rubro</strong>.
-        Los códigos indican jerarquía: <code>1.x.xx</code> = Activo, <code>2.x.xx</code> = Pasivo,
-        <code>3.x.xx</code> = Patrimonio Neto, <code>4.x.xx</code> = Ingresos, <code>5.x.xx</code> = Egresos.
-      </div>
       <div class="card" style="padding:0">
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Código</th><th>Nombre de cuenta</th><th>Rubro</th></tr></thead>
+            <thead><tr><th>Código</th><th>Nombre de la cuenta</th><th>Rubro</th></tr></thead>
             <tbody>${filas}</tbody>
           </table>
         </div>
       </div>`;
   }
 
-  /* ---- AGREGAR ---- */
+  /* ---- AGREGAR CUENTA ---- */
   function renderAgregar() {
     return `
       <div class="card">
-        <div class="card-title">Nueva cuenta</div>
+        <div class="card-title">Nueva Cuenta</div>
         <div class="form-row">
-          <div class="form-group">
+          <div class="form-group" style="width:120px">
             <label>Código</label>
             <input type="text" id="pc-cod" placeholder="Ej: 1.1.05" style="width:120px">
           </div>
@@ -208,6 +204,7 @@ const PlanCuentas = (() => {
   /* ---- EJERCICIOS ---- */
   function renderEjercicio() {
     const ej = EJERCICIOS[ejActual];
+    const isEval = Progreso.isEvaluacion();
 
     const tarjetas = EJERCICIOS.map((e, i) => {
       const yaCompleto = Progreso.estaCompleto(MODULO, i);
@@ -225,22 +222,34 @@ const PlanCuentas = (() => {
       const isOk = s.val === item.rubro;
       if (isOk) correctos++;
 
-      const iconoEstado = s.val
-        ? (isOk
-            ? `<span style="color:var(--success)"><i class="ti ti-check" aria-hidden="true"></i> Correcto</span>`
-            : `<span style="color:var(--danger)"><i class="ti ti-x" aria-hidden="true"></i> Revisá</span>`)
-        : '';
+      let iconoEstado = '';
+      if (!isEval) {
+        iconoEstado = s.val
+          ? (isOk
+              ? `<span style="color:var(--success)"><i class="ti ti-check" aria-hidden="true"></i> Correcto</span>`
+              : `<span style="color:var(--danger)"><i class="ti ti-x" aria-hidden="true"></i> Revisá</span>`)
+          : '';
+      } else if (evaluada) {
+        iconoEstado = s.val
+          ? (isOk
+              ? `<span style="color:var(--success)"><i class="ti ti-check" aria-hidden="true"></i> Correcto</span>`
+              : `<span style="color:var(--danger)"><i class="ti ti-x" aria-hidden="true"></i> Incorrecto</span>`)
+          : `<span style="color:var(--danger)"><i class="ti ti-x" aria-hidden="true"></i> Sin responder</span>`;
+      }
 
-      const pistaHtml = s.mostradaPista
-        ? `<div class="alert alert-warning" style="margin-top:6px;font-size:12px"><i class="ti ti-bulb" aria-hidden="true"></i> ${item.pista}</div>`
-        : `<button class="btn btn-warning btn-sm" onclick="PlanCuentas.pista(${i})"><i class="ti ti-bulb" aria-hidden="true"></i> Pista</button>`;
+      let pistaHtml = '';
+      if (!isEval) {
+        pistaHtml = s.mostradaPista
+          ? `<div class="alert alert-warning" style="margin-top:6px;font-size:12px"><i class="ti ti-bulb" aria-hidden="true"></i> ${item.pista}</div>`
+          : `<button class="btn btn-warning btn-sm" onclick="PlanCuentas.pista(${i})"><i class="ti ti-bulb" aria-hidden="true"></i> Pista</button>`;
+      }
 
       return `
         <tr>
           <td><code>${item.cod}</code></td>
           <td style="font-weight:500">${item.nombre}</td>
           <td>
-            <select style="font-size:12px;padding:4px 8px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--bg-surface);color:var(--text-primary)"
+            <select ${evaluada ? 'disabled' : ''} style="font-size:12px;padding:4px 8px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--bg-surface);color:var(--text-primary)"
               onchange="PlanCuentas.responder(${i}, this.value)">
               <option value="">-- elegir --</option>
               <option value="activo"  ${s.val === 'activo'  ? 'selected' : ''}>Activo</option>
@@ -250,27 +259,58 @@ const PlanCuentas = (() => {
               <option value="egreso"  ${s.val === 'egreso'  ? 'selected' : ''}>Egreso</option>
             </select>
           </td>
-          <td>${pistaHtml}</td>
-          <td style="font-size:12px">${iconoEstado}</td>
+          ${!isEval ? `<td>${pistaHtml}</td>` : ''}
+          <td>${iconoEstado}</td>
         </tr>`;
     }).join('');
 
-    /* Detectar completado y guardar progreso */
-    if (correctos === ej.items.length) {
-      Progreso.completar(MODULO, ejActual);
-      App.refrescarProgreso();
-    }
+    let finalMsg = '';
+    if (!isEval) {
+      if (correctos === ej.items.length) {
+        Progreso.completar(MODULO, ejActual);
+        App.refrescarProgreso();
+      }
+      finalMsg = correctos === ej.items.length
+        ? Utils.alert('ok', 'trophy', '¡Ejercicio completo! Excelente trabajo. El progreso fue guardado.')
+        : `<p style="font-size:12px;color:var(--text-muted);margin-top:8px">Correctas: ${correctos} / ${ej.items.length}</p>`;
+    } else {
+      if (evaluada) {
+        const pct = Math.round((correctos / ej.items.length) * 100);
+        const aprobado = pct >= 70;
+        if (aprobado) {
+          Progreso.completar(MODULO, ejActual);
+          App.refrescarProgreso();
+        }
 
-    const finalMsg = correctos === ej.items.length
-      ? Utils.alert('ok', 'trophy', '¡Ejercicio completo! Excelente trabajo. El progreso fue guardado.')
-      : `<p style="font-size:12px;color:var(--text-muted);margin-top:8px">Correctas: ${correctos} / ${ej.items.length}</p>`;
+        finalMsg = `
+          <div class="score-card ${aprobado ? 'aprobado' : 'desaprobado'}">
+            <div class="score-card-title">Resultado de la Evaluación</div>
+            <div class="score-card-value">${pct}%</div>
+            <div class="score-card-badge">${aprobado ? 'Aprobado ✓' : 'Reprobado ✗'}</div>
+            <div class="score-card-desc">
+              Respondiste correctamente <strong>${correctos}</strong> de <strong>${ej.items.length}</strong> cuentas.<br>
+              ${aprobado 
+                ? '¡Excelente! Has demostrado un buen dominio del plan de cuentas. Tu progreso ha sido registrado.' 
+                : 'No alcanzaste el 70% requerido para aprobar. ¡Inténtalo de nuevo!'}
+            </div>
+            <button class="btn btn-primary btn-sm" style="margin-top:14px" onclick="PlanCuentas.selectEj(${ejActual})">
+              <i class="ti ti-rotate" aria-hidden="true"></i> Reintentar
+            </button>
+          </div>`;
+      } else {
+        finalMsg = `
+          <button class="btn btn-primary" style="margin-top:14px" onclick="PlanCuentas.calificar()">
+            <i class="ti ti-checklist" aria-hidden="true"></i> Finalizar y Calificar
+          </button>`;
+      }
+    }
 
     return `
       <div class="ej-grid">${tarjetas}</div>
       <div class="card" style="padding:0">
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Código</th><th>Cuenta</th><th>Rubro</th><th>Pista</th><th>Estado</th></tr></thead>
+            <thead><tr><th>Código</th><th>Cuenta</th><th>Rubro</th>${!isEval ? '<th>Pista</th>' : ''}<th>Estado</th></tr></thead>
             <tbody>${filas}</tbody>
           </table>
         </div>
@@ -299,10 +339,12 @@ const PlanCuentas = (() => {
   function selectEj(idx) {
     ejActual = idx;
     ejState  = EJERCICIOS[idx].items.map(() => ({ val: '', mostradaPista: false }));
+    evaluada = false;
     renderInner();
   }
 
   function responder(i, val) {
+    if (evaluada) return;
     ejState[i] = ejState[i] || {};
     ejState[i].val = val;
     renderInner();
@@ -314,11 +356,17 @@ const PlanCuentas = (() => {
     renderInner();
   }
 
+  function calificar() {
+    evaluada = true;
+    renderInner();
+  }
+
   function init() {
     ejState = EJERCICIOS[0].items.map(() => ({ val: '', mostradaPista: false }));
+    evaluada = false;
     render();
   }
 
-  return { init, render, switchTab, agregar, selectEj, responder, pista, EJERCICIOS };
+  return { init, render, switchTab, agregar, selectEj, responder, pista, calificar, EJERCICIOS };
 
 })();

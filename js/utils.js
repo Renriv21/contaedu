@@ -50,6 +50,19 @@ const Utils = {
 const Progreso = {
 
   CLAVE: 'contaedu-progreso',
+  MODO_CLAVE: 'contaedu-modo-estudio',
+
+  getModoEstudio() {
+    return localStorage.getItem(this.MODO_CLAVE) || 'practica';
+  },
+
+  setModoEstudio(modo) {
+    localStorage.setItem(this.MODO_CLAVE, modo);
+  },
+
+  isEvaluacion() {
+    return this.getModoEstudio() === 'evaluacion';
+  },
 
   /* Totales de ejercicios por módulo */
   TOTALES: {
